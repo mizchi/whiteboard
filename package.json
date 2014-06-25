@@ -1,0 +1,25 @@
+{
+  "name": "gulp-webapp-skeleton",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mizchi",
+  "license": "MIT",
+  "devDependencies": {
+    "browserify": "^4.1.11",
+    "coffee-script": "^1.7.1",
+    "coffeeify": "^0.6.0",
+    "gulp": "^3.8.2",
+    "gulp-bower-files": "^0.2.5",
+    "gulp-concat": "^2.2.0",
+    "gulp-plumber": "^0.6.3",
+    "gulp-rename": "^1.2.0",
+    "gulp-sass": "^0.7.2",
+    "gulp-watch": "^0.6.8",
+    "jadeify": "^2.3.0",
+    "vinyl-source-stream": "^0.1.1"
+  }
+}
