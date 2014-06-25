@@ -26,8 +26,8 @@ gulp.task 'vendor', ->
 
 gulp.task 'css', ->
   gulp
-    .pipe plumber()
     .src './app/styles/*.scss'
+    .pipe plumber()
     .pipe sass()
     .pipe gulp.dest './public'
 
