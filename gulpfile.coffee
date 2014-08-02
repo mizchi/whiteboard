@@ -1,11 +1,20 @@
-gulp       = require 'gulp'
-rename     = require 'gulp-rename'
-plumber    = require 'gulp-plumber'
-concat     = require 'gulp-concat'
-sass       = require 'gulp-sass'
-bowerFiles = require "gulp-bower-files"
-source     = require 'vinyl-source-stream'
-browserify = require 'browserify'
+gulp        = require 'gulp'
+rename      = require 'gulp-rename'
+plumber     = require 'gulp-plumber'
+concat      = require 'gulp-concat'
+sass        = require 'gulp-ruby-sass'
+bowerFiles  = require "main-bower-files"
+source      = require 'vinyl-source-stream'
+browserify  = require 'browserify'
+browserSync = require 'browser-sync'
+
+gulp.task 'server', ->
+  browserSync
+    server:
+      baseDir: "./public"
+
+gulp.task 'reload', ->
+  browserSync.reload stream: true
 
 gulp.task 'js', ->
   browserify
@@ -19,7 +28,8 @@ gulp.task 'js', ->
   .pipe gulp.dest 'public'
 
 gulp.task 'vendor', ->
-  bowerFiles()
+  gulp
+    .src bowerFiles()
     .pipe plumber()
     .pipe concat('vendor.js')
     .pipe gulp.dest('./public')
@@ -28,14 +38,14 @@ gulp.task 'css', ->
   gulp
     .src './app/styles/*.scss'
     .pipe plumber()
-    .pipe sass()
+    .pipe sass(sourcemap: true)
     .pipe gulp.dest './public'
 
-gulp.task 'watch', ['build'], ->
-  gulp.watch 'app/**/*.coffee', ['js']
-  gulp.watch 'app/**/*.jade', ['js']
-  gulp.watch 'app/styles/**/*.scss', ['css']
-  gulp.watch 'bower_components/**/*.js', ['vendor']
+gulp.task 'watch', ['build', 'server'], ->
+  gulp.watch 'app/**/*.coffee', ['js', 'reload']
+  gulp.watch 'app/**/*.jade', ['js', 'reload']
+  gulp.watch 'app/styles/**/*.scss', ['css', 'reload']
+  gulp.watch 'bower_components/**/*.js', ['vendor', 'reload']
 
 gulp.task 'build', ['vendor', 'js', 'css']
 gulp.task 'default', ['build']
