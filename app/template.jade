@@ -1,2 +1,25 @@
-h1
-  | hello
+p
+  button.edit-free-drawing drawing
+  button.edit-rect rect
+  button.edit-circle circle
+  button.edit-line line
+  button.edit-eraser eraser
+
+svg.main(width=640 height=320 style="background-color:white")
+
+p
+  span tolelance:
+  span.tolelance-value 2
+  button.tolelance-plus +
+  button.tolelance-minus -
+
+  span stroke
+  input.stroke-color(value="black")
+
+  span fill
+  input.fill-color(value="none")
+
+
+div.preview
+//- svg.preview(width=640 height=320 style="background-color:grey;")
+
