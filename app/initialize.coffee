@@ -1,5 +1,34 @@
 template = require './template'
 
+class EventEmitter
+  on: (eventName, callback) ->
+    @_events ?= []
+    @_events[eventName] ?= []
+    @_events[eventName].push callback
+    @
+
+  off: (eventName, fn) ->
+    if arguments.length is 0
+      delete @events
+      return @
+    if fn?
+      # n = _.findIndex @events[eventName], (i) -> i is fn
+      n = @events[eventName]?.indexOf fn
+      if n > -1
+        @_events[eventName].splice n, 1
+    else
+      delete @_events[eventName]
+    @
+
+  trigger: (eventName, args...) ->
+    @_events?[eventName]?.map (callback) ->
+      callback args...
+    @
+
+extend = (obj, props) ->
+  for k, v of props then obj[k] = v
+  obj
+
 ReactView = React.createClass
   getInitialState: -> value: '<svg class="main" width=640 height=320 style="background-color:white;"></svg>'
   render: ->
@@ -9,250 +38,258 @@ ReactView = React.createClass
         __html: @state.value
     }
 
+class window.Whiteboard
+  extend @::, EventEmitter::
 
-$ =>
-  strokeColor = 'black'
-  fillColor = 'none'
+  constructor: (selector, {preview} = {}) ->
+    strokeColor = 'black'
+    fillColor = 'none'
 
-  $('body').html template()
+    @svg = svg = document.querySelector selector
+    $svg = $(svg)
+    paper = Snap(selector)
+    # window.paper = paper
 
-  $svg = $('svg')
-  paper = Snap('.main')
-  window.paper = paper
+    {left: offsetX, top: offsetY} = $svg.position()
 
-  svg = document.querySelector '.main'
+    # reactView = React.renderComponent (ReactView {}), document.querySelector '.preview'
 
-  {left: offsetX, top: offsetY} = $('svg').position()
-  console.log offsetX, offsetY
+    update = =>
+      @trigger 'changed', @getSVG()
 
-  reactView = React.renderComponent (ReactView {}), document.querySelector '.preview'
+    setDrawingMode = ->
+      lastPath = null
 
+      $(svg).off()
+      paths = []
+      new Hammer(svg)
+        .on 'touch', (ev) ->
+          paths.push [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastPath = paper.polyline
+            points: _.flatten(paths)
+            fill:"none"
+            stroke: strokeColor
+            fill: fillColor
+            strokeWidth: 1
 
-  update = ->
-    reactView.setState value: svg.outerHTML
+        .on 'drag', (ev) ->
+          lastPath?.remove()
 
-  setDrawingMode = ->
-    lastPath = null
+          paths.push [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastPath = paper.polyline
+            points: _.flatten(paths)
+            fill:"none"
+            stroke: strokeColor
+            fill: fillColor
+            strokeWidth: 1
 
-    $(svg).off()
-    paths = []
-    new Hammer(svg)
-      .on 'touch', (ev) ->
-        paths.push [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastPath = paper.polyline
-          points: _.flatten(paths)
-          fill:"none"
-          stroke: strokeColor
-          fill: fillColor
-          strokeWidth: 1
+        .on 'dragend', (ev) ->
+          lastPath?.remove()
 
-      .on 'drag', (ev) ->
-        lastPath?.remove()
+          simplified = simplify (paths.map ([x, y]) -> {x, y}), tolelance, false
+          r = simplified.map ({x, y}) -> [x, y]
 
-        paths.push [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastPath = paper.polyline
-          points: _.flatten(paths)
-          fill:"none"
-          stroke: strokeColor
-          fill: fillColor
-          strokeWidth: 1
+          lastPath = paper.polyline
+            points: r
+            stroke: strokeColor
+            fill: fillColor
+            strokeWidth: 2
+          # rawSVG = document.querySelector('.main').outerHTML
+          # reactView.setState value: rawSVG
+          paths = []
 
-      .on 'dragend', (ev) ->
-        lastPath?.remove()
+          do (lastPath) ->
+            lastPath.node.onmousemove = ->
+              if eraser
+                lastPath.remove()
+                update()
 
-        simplified = simplify (paths.map ([x, y]) -> {x, y}), tolelance, false
-        r = simplified.map ({x, y}) -> [x, y]
+          update()
 
-        lastPath = paper.polyline
-          points: r
-          stroke: strokeColor
-          fill: fillColor
-          strokeWidth: 2
-        # rawSVG = document.querySelector('.main').outerHTML
-        # reactView.setState value: rawSVG
-        paths = []
+    setRectDrawingMode = ->
+      startPoint = null
+      endPoint = null
+      lastShape = null
 
-        do (lastPath) ->
-          lastPath.node.onmousemove = ->
-            if eraser
-              lastPath.remove()
-              update()
+      $(svg).off()
+      new Hammer(svg)
+        .on 'touch', (ev) ->
+          startPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+        .on 'dragstart', (ev) ->
+          lastShape = null
+        .on 'drag', (ev) ->
+          endPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastShape?.remove()
+          [sx, sy] = startPoint
+          [ex, ey] = endPoint
 
-        update()
+          x = Math.min sx, ex
+          y = Math.min sy, ey
 
-  setRectDrawingMode = ->
-    startPoint = null
-    endPoint = null
-    lastShape = null
+          w = Math.abs sx - ex
+          h = Math.abs sy - ey
 
-    $(svg).off()
-    new Hammer(svg)
-      .on 'touch', (ev) ->
-        startPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-      .on 'dragstart', (ev) ->
-        lastShape = null
-      .on 'drag', (ev) ->
-        endPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastShape?.remove()
-        [sx, sy] = startPoint
-        [ex, ey] = endPoint
+          rect = paper.rect x, y, w, h
+          rect.attr
+            stroke: strokeColor
+            fill: fillColor
+            strokeWidth: 1
+          lastShape = rect
 
-        x = Math.min sx, ex
-        y = Math.min sy, ey
+        .on 'dragend', (ev) ->
+          update()
+          do (lastShape) ->
+            lastShape.node.onmousemove = ->
+              if eraser
+                lastShape.remove()
+                update()
 
-        w = Math.abs sx - ex
-        h = Math.abs sy - ey
+    setCircleDrawingMode = ->
+      startPoint = null
+      endPoint = null
+      lastShape = null
 
-        rect = paper.rect x, y, w, h
-        rect.attr
-          stroke: strokeColor
-          fill: fillColor
-          strokeWidth: 1
-        lastShape = rect
+      $(svg).off()
+      new Hammer(svg)
+        .on 'touch', (ev) ->
+          startPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastShape = null
+        .on 'drag', (ev) ->
+          endPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastShape?.remove()
+          [sx, sy] = startPoint
+          [ex, ey] = endPoint
 
-      .on 'dragend', (ev) ->
-        update()
-        do (lastShape) ->
-          lastShape.node.onmousemove = ->
-            if eraser
-              lastShape.remove()
-              update()
+          x = sx
+          y = sy
 
-  setCircleDrawingMode = ->
-    startPoint = null
-    endPoint = null
-    lastShape = null
+          r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
 
-    $(svg).off()
-    new Hammer(svg)
-      .on 'touch', (ev) ->
-        startPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastShape = null
-      .on 'drag', (ev) ->
-        endPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastShape?.remove()
-        [sx, sy] = startPoint
-        [ex, ey] = endPoint
+          rect = paper.circle x, y, r
+          rect.attr
+            strokeWidth: 1
+            stroke: strokeColor
+            fill: fillColor
+          lastShape = rect
 
-        x = sx
-        y = sy
-
-        r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
-
-        rect = paper.circle x, y, r
-        rect.attr
-          strokeWidth: 1
-          stroke: strokeColor
-          fill: fillColor
-        lastShape = rect
-
-      .on 'dragend', (ev) ->
-        update()
-        do (lastShape) ->
-          lastShape.node.onmousemove = ->
-            if eraser
-              lastShape.remove()
-              update()
+        .on 'dragend', (ev) ->
+          update()
+          do (lastShape) ->
+            lastShape.node.onmousemove = ->
+              if eraser
+                lastShape.remove()
+                update()
 
 
-  setLineDrawingMode = ->
-    startPoint = null
-    endPoint = null
-    lastShape = null
+    setLineDrawingMode = ->
+      startPoint = null
+      endPoint = null
+      lastShape = null
 
-    $(svg).off()
-    new Hammer(svg)
-      .on 'touch', (ev) ->
-        startPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastShape = null
-      .on 'drag', (ev) ->
-        console.log 'drag'
-        endPoint = [
-          ev.gesture.center.pageX - offsetX
-          ev.gesture.center.pageY - offsetY
-        ]
-        lastShape?.remove()
-        [sx, sy] = startPoint
-        [ex, ey] = endPoint
+      $(svg).off()
+      new Hammer(svg)
+        .on 'touch', (ev) ->
+          startPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastShape = null
+        .on 'drag', (ev) ->
+          console.log 'drag'
+          endPoint = [
+            ev.gesture.center.pageX - offsetX
+            ev.gesture.center.pageY - offsetY
+          ]
+          lastShape?.remove()
+          [sx, sy] = startPoint
+          [ex, ey] = endPoint
 
-        line = paper.line sx, sy, ex, ey
-        line.attr
-          stroke: strokeColor
-          fill: fillColor
-          strokeWidth: 1
-          # fill: 'transparent'
+          line = paper.line sx, sy, ex, ey
+          line.attr
+            stroke: strokeColor
+            fill: fillColor
+            strokeWidth: 1
+            # fill: 'transparent'
 
-        lastShape = line
+          lastShape = line
 
-      .on 'dragend', (ev) ->
-        update()
-        do (lastShape) ->
-          lastShape.node.onmousemove = ->
-            if eraser
-              lastShape.remove()
-              update()
+        .on 'dragend', (ev) ->
+          update()
+          do (lastShape) ->
+            lastShape.node.onmousemove = ->
+              if eraser
+                lastShape.remove()
+                update()
 
-  eraser = false
-  setEraserMode = ->
-    $(svg).off()
-    new Hammer(svg)
-      .on 'dragstart', (ev) ->
-        eraser = true
-      .on 'dragend', (ev) ->
-        eraser = false
+    eraser = false
+    setEraserMode = ->
+      $(svg).off()
+      new Hammer(svg)
+        .on 'dragstart', (ev) ->
+          eraser = true
+        .on 'dragend', (ev) ->
+          eraser = false
 
-  setDrawingMode()
-
-  tolelance = 2
-  $tolelance = $('.tolelance-value')
-  $('.tolelance-plus').on 'click', ->
-    tolelance++
-    $tolelance.text tolelance
-
-  $('.tolelance-minus').on 'click', ->
-    tolelance--
-    $tolelance.text tolelance
-
-  $('.edit-free-drawing').on 'click', ->
     setDrawingMode()
 
-  $('.edit-rect').on 'click', ->
-    setRectDrawingMode()
+    tolelance = 2
+    $tolelance = $('.tolelance-value')
+    $('.tolelance-plus').on 'click', ->
+      tolelance++
+      $tolelance.text tolelance
 
-  $('.edit-line').on 'click', ->
-    setLineDrawingMode()
+    $('.tolelance-minus').on 'click', ->
+      tolelance--
+      $tolelance.text tolelance
 
-  $('.edit-circle').on 'click', ->
-    setCircleDrawingMode()
+    $('.edit-free-drawing').on 'click', ->
+      setDrawingMode()
 
-  $('.edit-eraser').on 'click', ->
-    setEraserMode()
+    $('.edit-rect').on 'click', ->
+      setRectDrawingMode()
 
-  $fillColor = $('input.fill-color').on 'keyup', ->
-    fillColor = $fillColor.val()
+    $('.edit-line').on 'click', ->
+      setLineDrawingMode()
 
-  $strokeColor = $('input.stroke-color').on 'keyup', ->
-    strokeColor = $strokeColor.val()
-  # $('svg.main').on '', 'rect', -> console.log 'rect'
+    $('.edit-circle').on 'click', ->
+      setCircleDrawingMode()
+
+    $('.edit-eraser').on 'click', ->
+      setEraserMode()
+
+    $fillColor = $('input.fill-color').on 'keyup', ->
+      fillColor = $fillColor.val()
+
+    $strokeColor = $('input.stroke-color').on 'keyup', ->
+      strokeColor = $strokeColor.val()
+    # $('svg.main').on '', 'rect', -> console.log 'rect'
+
+  getSVG: ->
+    @svg.outerHTML
+
+$ =>
+  $('body').html template()
+  whiteboard = new Whiteboard('.main')
+
+  reactView = React.renderComponent (ReactView {}), document.querySelector '.preview'
+  whiteboard.on 'changed', (svg) ->
+    reactView.setState value: svg
 

@@ -1,7 +1,66 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var ReactView, template;
+var EventEmitter, ReactView, extend, template,
+  __slice = [].slice;
 
 template = require('./template');
+
+EventEmitter = (function() {
+  function EventEmitter() {}
+
+  EventEmitter.prototype.on = function(eventName, callback) {
+    var _base;
+    if (this._events == null) {
+      this._events = [];
+    }
+    if ((_base = this._events)[eventName] == null) {
+      _base[eventName] = [];
+    }
+    this._events[eventName].push(callback);
+    return this;
+  };
+
+  EventEmitter.prototype.off = function(eventName, fn) {
+    var n, _ref;
+    if (arguments.length === 0) {
+      delete this.events;
+      return this;
+    }
+    if (fn != null) {
+      n = (_ref = this.events[eventName]) != null ? _ref.indexOf(fn) : void 0;
+      if (n > -1) {
+        this._events[eventName].splice(n, 1);
+      }
+    } else {
+      delete this._events[eventName];
+    }
+    return this;
+  };
+
+  EventEmitter.prototype.trigger = function() {
+    var args, eventName, _ref, _ref1;
+    eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if ((_ref = this._events) != null) {
+      if ((_ref1 = _ref[eventName]) != null) {
+        _ref1.map(function(callback) {
+          return callback.apply(null, args);
+        });
+      }
+    }
+    return this;
+  };
+
+  return EventEmitter;
+
+})();
+
+extend = function(obj, props) {
+  var k, v;
+  for (k in props) {
+    v = props[k];
+    obj[k] = v;
+  }
+  return obj;
+};
 
 ReactView = React.createClass({
   getInitialState: function() {
@@ -19,24 +78,23 @@ ReactView = React.createClass({
   }
 });
 
-$((function(_this) {
-  return function() {
-    var $fillColor, $strokeColor, $svg, $tolelance, eraser, fillColor, offsetX, offsetY, paper, reactView, setCircleDrawingMode, setDrawingMode, setEraserMode, setLineDrawingMode, setRectDrawingMode, strokeColor, svg, tolelance, update, _ref;
+window.Whiteboard = (function() {
+  extend(Whiteboard.prototype, EventEmitter.prototype);
+
+  function Whiteboard(selector, _arg) {
+    var $fillColor, $strokeColor, $svg, $tolelance, eraser, fillColor, offsetX, offsetY, paper, preview, setCircleDrawingMode, setDrawingMode, setEraserMode, setLineDrawingMode, setRectDrawingMode, strokeColor, svg, tolelance, update, _ref;
+    preview = (_arg != null ? _arg : {}).preview;
     strokeColor = 'black';
     fillColor = 'none';
-    $('body').html(template());
-    $svg = $('svg');
-    paper = Snap('.main');
-    window.paper = paper;
-    svg = document.querySelector('.main');
-    _ref = $('svg').position(), offsetX = _ref.left, offsetY = _ref.top;
-    console.log(offsetX, offsetY);
-    reactView = React.renderComponent(ReactView({}), document.querySelector('.preview'));
-    update = function() {
-      return reactView.setState({
-        value: svg.outerHTML
-      });
-    };
+    this.svg = svg = document.querySelector(selector);
+    $svg = $(svg);
+    paper = Snap(selector);
+    _ref = $svg.position(), offsetX = _ref.left, offsetY = _ref.top;
+    update = (function(_this) {
+      return function() {
+        return _this.trigger('changed', _this.getSVG());
+      };
+    })(this);
     setDrawingMode = function() {
       var lastPath, paths;
       lastPath = null;
@@ -68,17 +126,17 @@ $((function(_this) {
         if (lastPath != null) {
           lastPath.remove();
         }
-        simplified = simplify(paths.map(function(_arg) {
+        simplified = simplify(paths.map(function(_arg1) {
           var x, y;
-          x = _arg[0], y = _arg[1];
+          x = _arg1[0], y = _arg1[1];
           return {
             x: x,
             y: y
           };
         }), tolelance, false);
-        r = simplified.map(function(_arg) {
+        r = simplified.map(function(_arg1) {
           var x, y;
-          x = _arg.x, y = _arg.y;
+          x = _arg1.x, y = _arg1.y;
           return [x, y];
         });
         lastPath = paper.polyline({
@@ -254,8 +312,29 @@ $((function(_this) {
     $fillColor = $('input.fill-color').on('keyup', function() {
       return fillColor = $fillColor.val();
     });
-    return $strokeColor = $('input.stroke-color').on('keyup', function() {
+    $strokeColor = $('input.stroke-color').on('keyup', function() {
       return strokeColor = $strokeColor.val();
+    });
+  }
+
+  Whiteboard.prototype.getSVG = function() {
+    return this.svg.outerHTML;
+  };
+
+  return Whiteboard;
+
+})();
+
+$((function(_this) {
+  return function() {
+    var reactView, whiteboard;
+    $('body').html(template());
+    whiteboard = new Whiteboard('.main');
+    reactView = React.renderComponent(ReactView({}), document.querySelector('.preview'));
+    return whiteboard.on('changed', function(svg) {
+      return reactView.setState({
+        value: svg
+      });
     });
   };
 })(this));
