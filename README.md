@@ -13,14 +13,17 @@ open public/index.html
 
 ## Example
 
+```html
+<body>
+  <div class='whiteboard-container'></div>
+</body>
+```
+
 ```coffee
 $ =>
-  $('body').html template()
-  whiteboard = new Whiteboard('svg.main') # svg tag
-
-  reactView = React.renderComponent (ReactView {}), document.querySelector '.preview'
+  whiteboard = new Whiteboard('.whiteboard-container')
   whiteboard.on 'changed', (svg) ->
-    reactView.setState value: svg
+    console.log 'raw svg', svg
 ```
 
 ## API

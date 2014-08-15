@@ -24,7 +24,7 @@ gulp.task 'js', ->
   .transform 'jadeify'
   .bundle()
   .pipe plumber()
-  .pipe source 'app.js'
+  .pipe source 'whiteboard.js'
   .pipe gulp.dest 'public'
 
 gulp.task 'vendor', ->

@@ -1,6 +1,7 @@
 {
-  "name": "gulp-webapp-skeleton",
+  "name": "whiteboard",
   "version": "0.0.0",
+  "main": "public/whiteboard.js",
   "authors": [
     "Koutarou Chikuba <miz404@gmail.com>"
   ],
@@ -13,10 +14,8 @@
     "tests"
   ],
   "dependencies": {
-    "bluebird": "~2.1.3",
     "jquery": "~2.1.1",
     "lodash": "~2.4.1",
-    "raphael": "~2.1.2",
     "hammerjs": "~2.0.2",
     "jquery-hammerjs": "~1.1.3",
     "snap.svg": "~0.3.0",

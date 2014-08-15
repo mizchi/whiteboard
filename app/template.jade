@@ -1,25 +1,28 @@
-p
-  button.edit-free-drawing drawing
-  button.edit-rect rect
-  button.edit-circle circle
-  button.edit-line line
-  button.edit-eraser eraser
+.whiteboard-container
+  p
+    button.edit-free-drawing drawing
+    button.edit-rect rect
+    button.edit-circle circle
+    button.edit-line line
+    button.edit-eraser eraser
+    | /
+    button.undo undo
+    button.redo redo
 
-svg.main(width=640 height=320 style="background-color:white")
+  svg.whiteboard(width=640 height=320 style="background-color:white")
 
-p
-  span tolelance:
-  span.tolelance-value 2
-  button.tolelance-plus +
-  button.tolelance-minus -
+  p
+    span tolelance:
+    span.tolelance-value 2
+    button.tolelance-plus +
+    button.tolelance-minus -
 
-  span stroke
-  input.stroke-color(value="black")
+    span stroke
+    input.stroke-color(value="black")
 
-  span fill
-  input.fill-color(value="none")
+    span fill
+    input.fill-color(value="none")
 
-
-div.preview
-//- svg.preview(width=640 height=320 style="background-color:grey;")
+  div.preview
+  //- svg.preview(width=640 height=320 style="background-color:grey;")
 
