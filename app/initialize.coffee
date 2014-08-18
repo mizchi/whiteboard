@@ -1,27 +1,10 @@
-class EventEmitter
-  on: (eventName, callback) =>
-    @_events ?= []
-    @_events[eventName] ?= []
-    @_events[eventName].push callback
-    @
+RectDrawingGesture = require './gestures/rect-drawing-gesture'
+FreeDrawingGesture = require './gestures/free-drawing-gesture'
+LineDrawingGesture = require './gestures/line-drawing-gesture'
+CircleDrawingGesture = require './gestures/circle-drawing-gesture'
+EraserGesture = require './gestures/eraser-gesture'
 
-  off: (eventName, fn) =>
-    if arguments.length is 0
-      delete @events
-      return @
-    if fn?
-      # n = _.findIndex @events[eventName], (i) => i is fn
-      n = @events[eventName]?.indexOf fn
-      if n > -1
-        @_events[eventName].splice n, 1
-    else
-      delete @_events[eventName]
-    @
-
-  trigger: (eventName, args...) =>
-    @_events?[eventName]?.map (callback) =>
-      callback args...
-    @
+EventEmitter = require './utils/event-emitter'
 
 extend = (obj, props) =>
   for k, v of props then obj[k] = v
@@ -35,6 +18,7 @@ ReactView = React.createClass
       dangerouslySetInnerHTML:
         __html: @state.value
     }
+
 
 class window.Whiteboard
   template = require './template'
@@ -50,9 +34,24 @@ class window.Whiteboard
   getSVG: =>
     @svg.outerHTML
 
+  setMode: (mode) =>
+    @$svg.off()
+    Gesture = switch mode
+      when 'free'   then FreeDrawingGesture
+      when 'rect'   then RectDrawingGesture
+      when 'line'   then LineDrawingGesture
+      when 'circle' then CircleDrawingGesture
+      when 'eraser' then EraserGesture
+    gesture = new Gesture @
+    new Hammer(@svg)
+      .on 'touch',     (ev) => gesture.onTouch(ev)
+      .on 'dragstart', (ev) => gesture.onDragStart(ev)
+      .on 'drag',      (ev) => gesture.onDrag ev
+      .on 'dragend',   (ev) => gesture.onDragEnd ev
+
   constructor: (selector, {preview} = {}) ->
-    strokeColor = 'black'
-    fillColor = 'transparent'
+    @strokeColor = strokeColor = 'black'
+    @fillColor = fillColor = 'transparent'
 
     @el = el = document.querySelector selector
     @$el = $(@el)
@@ -60,189 +59,17 @@ class window.Whiteboard
 
     @svg = svg = document.querySelector 'svg.whiteboard'
     @$svg = $svg = $(@svg)
-    paper = Snap(svg)
+    @paper = paper = Snap(svg)
 
     {left: offsetX, top: offsetY} = @$svg.position()
+    @offsetX = offsetX
+    @offsetY = offsetY
 
-    setDrawingMode = =>
-      lastPath = null
-
-      @$svg.off()
-      paths = []
-      new Hammer(@svg)
-        .on 'touch', (ev) =>
-          paths.push [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastPath = paper.polyline
-            points: _.flatten(paths)
-            fill: "none"
-            stroke: strokeColor
-            fill: fillColor
-            strokeWidth: 1
-
-        .on 'drag', (ev) =>
-          lastPath?.remove()
-
-          paths.push [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastPath = paper.polyline
-            points: _.flatten(paths)
-            fill:"none"
-            stroke: strokeColor
-            fill: fillColor
-            strokeWidth: 1
-
-        .on 'dragend', (ev) =>
-          lastPath?.remove()
-
-          simplified = simplify (paths.map ([x, y]) => {x, y}), tolelance, false
-          r = simplified.map ({x, y}) => [x, y]
-
-          lastPath = paper.polyline
-            points: r
-            stroke: strokeColor
-            fill: fillColor
-            strokeWidth: 2
-          paths = []
-
-          do (lastPath) =>
-            lastPath.node.onmousemove = =>
-              if eraser
-                lastPath.remove()
-                @update()
-
+    sharedEvents = =>
+      $svg.on 'mousemove', '*', (event) =>
+        if @eraser
+          $(event.target).remove()
           @update()
-
-    setRectDrawingMode = =>
-      startPoint = null
-      endPoint = null
-      lastShape = null
-
-      @$svg.off()
-      new Hammer(@svg)
-        .on 'touch', (ev) =>
-          startPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-        .on 'dragstart', (ev) =>
-          lastShape = null
-        .on 'drag', (ev) =>
-          endPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastShape?.remove()
-          [sx, sy] = startPoint
-          [ex, ey] = endPoint
-
-          x = Math.min sx, ex
-          y = Math.min sy, ey
-
-          w = Math.abs sx - ex
-          h = Math.abs sy - ey
-
-          rect = paper.rect x, y, w, h
-          rect.attr
-            stroke: strokeColor
-            fill: fillColor
-            strokeWidth: 1
-          lastShape = rect
-
-        .on 'dragend', (ev) =>
-          @update()
-          do (lastShape) =>
-            lastShape.node.onmousemove = =>
-              if eraser
-                lastShape.remove()
-                @update()
-
-    setCircleDrawingMode = =>
-      startPoint = null
-      endPoint = null
-      lastShape = null
-
-      @$svg.off()
-      new Hammer(@svg)
-        .on 'touch', (ev) =>
-          startPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastShape = null
-        .on 'drag', (ev) =>
-          endPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastShape?.remove()
-          [sx, sy] = startPoint
-          [ex, ey] = endPoint
-
-          x = sx
-          y = sy
-
-          r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
-
-          rect = paper.circle x, y, r
-          rect.attr
-            strokeWidth: 1
-            stroke: strokeColor
-            fill: fillColor
-          lastShape = rect
-
-        .on 'dragend', (ev) =>
-          @update()
-          do (lastShape) =>
-            lastShape.node.onmousemove = =>
-              if eraser
-                lastShape.remove()
-                @update()
-
-
-    setLineDrawingMode = =>
-      startPoint = null
-      endPoint = null
-      lastShape = null
-
-      @$svg.off()
-      new Hammer(@svg)
-        .on 'touch', (ev) =>
-          startPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastShape = null
-        .on 'drag', (ev) =>
-          console.log 'drag'
-          endPoint = [
-            ev.gesture.center.pageX - offsetX
-            ev.gesture.center.pageY - offsetY
-          ]
-          lastShape?.remove()
-          [sx, sy] = startPoint
-          [ex, ey] = endPoint
-
-          line = paper.line sx, sy, ex, ey
-          line.attr
-            stroke: strokeColor
-            fill: fillColor
-            strokeWidth: 1
-            # fill: 'transparent'
-
-          lastShape = line
-
-        .on 'dragend', (ev) =>
-          @update()
-          do (lastShape) =>
-            lastShape.node.onmousemove = =>
-              if eraser
-                lastShape.remove()
-                @update()
 
     eraser = false
     setEraserMode = =>
@@ -253,38 +80,35 @@ class window.Whiteboard
         .on 'dragend', (ev) =>
           eraser = false
 
-    setDrawingMode()
+    @setMode 'free'
+    sharedEvents()
 
-    tolelance = 2
+    @tolelance = 2
     $tolelance = $('.tolelance-value')
     @$('.tolelance-plus').on 'click', =>
-      tolelance++
-      $tolelance.text tolelance
+      @tolelance++
+      $tolelance.text @tolelance
 
     @$('.tolelance-minus').on 'click', =>
-      tolelance--
-      $tolelance.text tolelance
+      @tolelance--
+      $tolelance.text @tolelance
 
-    @$('.edit-free-drawing').on 'click', =>
-      setDrawingMode()
-
-    @$('.edit-rect').on 'click', =>
-      setRectDrawingMode()
-
-    @$('.edit-line').on 'click', =>
-      setLineDrawingMode()
-
-    @$('.edit-circle').on 'click', =>
-      setCircleDrawingMode()
-
+    @$('.edit-free').on 'click', => @setMode 'free'
+    @$('.edit-rect').on   'click', => @setMode 'rect'
+    @$('.edit-line').on   'click', => @setMode 'line'
+    @$('.edit-circle').on 'click', => @setMode 'circle'
     @$('.edit-eraser').on 'click', =>
-      setEraserMode()
+      @setMode 'eraser'
+      $svg.on 'mousemove', '*', (event) =>
+        if @eraser
+          $(event.target).remove()
+          @update()
 
     $fillColor = @$('input.fill-color').on 'keyup', =>
-      fillColor = @$fillColor.val()
+      @fillColor = @$fillColor.val()
 
     $strokeColor = @$('input.stroke-color').on 'keyup', =>
-      strokeColor = $strokeColor.val()
+      @strokeColor = $strokeColor.val()
 
     @$('.undo').on 'click', =>
       @trigger 'undo'
