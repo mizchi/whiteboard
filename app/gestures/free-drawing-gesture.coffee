@@ -1,4 +1,4 @@
-Gesture = require './gesture'
+Gesture = require './base/gesture'
 module.exports =
 class FreeDrawingGesture extends Gesture
   constructor: ->
