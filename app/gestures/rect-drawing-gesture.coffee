@@ -8,20 +8,13 @@ class RectDrawingGesture extends Gesture
     @lastShape = null
 
   onTouch: (ev) =>
-    @startPoint = [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
+    @lastShape = null
+    @startPoint = @getPoint ev
 
   onDragStart: (ev) =>
-    @lastShape = null
 
   onDrag: (ev) =>
-    @endPoint = [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
-
+    @endPoint = @getPoint ev
     @lastShape?.remove()
 
     [sx, sy] = @startPoint
@@ -33,7 +26,7 @@ class RectDrawingGesture extends Gesture
     w = Math.abs sx - ex
     h = Math.abs sy - ey
 
-    rect = @wb.paper.rect x, y, w, h
+    rect = @paper.rect x, y, w, h
     rect.attr
       stroke: @wb.strokeColor
       fill: @wb.fillColor

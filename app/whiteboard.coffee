@@ -25,7 +25,7 @@ class window.Whiteboard
     @svg.outerHTML
 
   setSVG: (text) =>
-    $svg.html text
+    @$svg.html text
 
   setMode: (mode) =>
     @$svg.off()

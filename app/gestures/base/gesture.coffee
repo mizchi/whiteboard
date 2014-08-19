@@ -7,3 +7,9 @@ class Gesture
   onDrag: ->
   onDragEnd: ->
 
+  getPoint: (ev) ->
+    [
+      ev.gesture.center.pageX - @wb.offsetX
+      ev.gesture.center.pageY - @wb.offsetY
+    ]
+

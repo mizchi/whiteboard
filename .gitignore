@@ -16,8 +16,6 @@ results
 build
 .grunt
 .sass-cache
-public
-!public/index.html
 
 bower_components
 node_modules

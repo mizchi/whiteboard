@@ -1,0 +1,9 @@
+Gesture = require './base/gesture'
+module.exports =
+class DrawingGesture extends Gesture
+  constructor: ->
+    super
+  onTouch: (ev) =>
+  onDrag: (ev) =>
+  onDragEnd: (ev) =>
+    @wb.update()

@@ -8,17 +8,11 @@ class CircleDrawingGesture extends Gesture
     @lastShape  = null
 
   onTouch: (ev) =>
-    @startPoint = [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
+    @startPoint = @getPoint(ev)
     @lastShape = null
 
   onDrag: (ev) =>
-    @endPoint = [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
+    @endPoint = @getPoint(ev)
     @lastShape?.remove()
 
     [sx, sy] = @startPoint

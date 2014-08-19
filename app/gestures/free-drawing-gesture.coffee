@@ -3,29 +3,16 @@ module.exports =
 class FreeDrawingGesture extends Gesture
   constructor: ->
     super
-    @paths = []
+    @paths = null
     @lastPath = null
 
   onTouch: (ev) =>
-    @paths.push [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
-    @lastPath = @wb.paper.polyline
-      points: _.flatten(@paths)
-      fill: "none"
-      stroke: @wb.strokeColor
-      fill: @wb.fillColor
-      strokeWidth: 1
+    @paths = []
+    @paths.push @getPoint(ev)
 
   onDrag: (ev) =>
-    @lastPath?.remove()
-
-    @paths.push [
-      ev.gesture.center.pageX - @wb.offsetX
-      ev.gesture.center.pageY - @wb.offsetY
-    ]
-
+    @lastPath?.remove(ev)
+    @paths.push @getPoint(ev)
     @lastPath = @paper.polyline
       points: _.flatten(@paths)
       fill:"none"
@@ -33,18 +20,22 @@ class FreeDrawingGesture extends Gesture
       fill: @wb.fillColor
       strokeWidth: 1
 
+  simplify: (paths) ->
+    simplify(
+      (paths.map ([x, y]) => {x, y}), @wb.tolelance, false
+    ).map ({x, y}) => [x, y]
 
   onDragEnd: (ev) =>
     @lastPath?.remove()
 
-    simplified = simplify (@paths.map ([x, y]) => {x, y}), @wb.tolelance, false
-    r = simplified.map ({x, y}) => [x, y]
+    simplified = @simplify (@paths)
 
     @lastPath = @wb.paper.polyline
-      points: r
+      points: simplified
       stroke: @wb.strokeColor
       fill: @wb.fillColor
       strokeWidth: 1
     @paths = []
 
+    @lastPath = null
     @wb.update()
