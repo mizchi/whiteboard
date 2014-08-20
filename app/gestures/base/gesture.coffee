@@ -9,7 +9,7 @@ class Gesture
 
   getPoint: (ev) ->
     [
-      ev.gesture.center.pageX - @wb.offsetX
+      ev.gesture.center.pageX - @wb.offsetX - 7
       ev.gesture.center.pageY - @wb.offsetY
     ]
 
