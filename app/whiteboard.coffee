@@ -26,6 +26,16 @@ class window.Whiteboard
   setSVG: (text) =>
     @$svg.html text
 
+  setLayer: (n) ->
+    for l in @layers
+      l.node.style.visibility = 'hidden'
+    @layer = @layers[n]
+    @layer.node.style.visibility = 'visible'
+
+  showBackground: -> @$('.bg').show()
+
+  hideBackground: -> @$('.bg').hide()
+
   setMode: (mode) =>
     @$svg.off()
     Gesture = switch mode
@@ -38,8 +48,15 @@ class window.Whiteboard
 
     gesture = new Gesture @
     @$svg.on 'mousedown touchstart', (ev) => gesture._onTouchStart(ev)
-    @$svg.on 'mousemove touchmove', (ev) => gesture._onTouchMove(ev)
     @$svg.on 'mouseup touchend', (ev) => gesture._onTouchEnd(ev)
+
+    $x = $('.mouse-x')
+    $y = $('.mouse-y')
+    @$svg.on 'mousemove touchmove', (ev) =>
+      gesture._onTouchMove(ev)
+      [x, y] = gesture.getPoint(ev)
+      $x.text x
+      $y.text y
 
   constructor: (selector, {preview} = {}) ->
     @strokeColor = strokeColor = 'black'
@@ -106,4 +123,13 @@ class window.Whiteboard
 
     @$('.redo').on 'click', => @trigger 'redo'
 
-    mc = new Hammer.Manager(@svg)
+    @$('.layer0').on 'click', => @setLayer(0); @showBackground()
+    @$('.layer1').on 'click', => @setLayer(1); @hideBackground()
+    @$('.layer2').on 'click', => @setLayer(2); @hideBackground()
+    @layers = [
+      @paper.g()
+      @paper.g()
+      @paper.g()
+    ]
+    @ui = @paper.g()
+    @setLayer(0)

@@ -6,6 +6,8 @@ class Gesture
   constructor: (@wb) ->
     @paper = @wb.paper
 
+  currentLayer: -> @wb.layer
+
   _onTouch: -> @onTouch arguments...
   onTouch: ->
 
@@ -26,6 +28,7 @@ class Gesture
 
   _onTouchEnd: -> @onTouchEnd arguments...
   onTouchEnd: ->
+
 
   getPoint: (ev) =>
     # TODO: Fix for android

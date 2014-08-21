@@ -9,8 +9,6 @@ class DragGesture extends Gesture
     @minimumTouchSize = 3
 
   onTouch: (ev) ->
-    console.log 'touch'
-
   onDragStart: (ev) ->
   onDrag: (ev) ->
   onDragEnd: (ev) ->

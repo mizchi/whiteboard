@@ -10,8 +10,8 @@ class Preview
       }
 
   constructor: (selector) ->
-    @reactView = React.renderComponent (ReactView {}), document.querySelector selector
+    @el = document.querySelector selector
+    @reactView = React.renderComponent (ReactView {}), @el
 
   update: (text) ->
     @reactView.setState value: text
-

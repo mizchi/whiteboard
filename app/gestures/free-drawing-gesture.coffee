@@ -14,7 +14,7 @@ class FreeDrawingGesture extends DragGesture
   onDrag: (ev) =>
     @lastPath?.remove()
 
-    @lastPath = @paper.polyline
+    @lastPath = @currentLayer().polyline
       points: _.flatten(@points)
       fill: "none"
       stroke: @wb.strokeColor
@@ -25,7 +25,7 @@ class FreeDrawingGesture extends DragGesture
     @lastPath?.remove()
 
     simplified = _simplify(@points, @wb.tolelance)
-    @lastPath = @paper.polyline
+    @lastPath = @currentLayer().polyline
       points: simplified
       stroke: @wb.strokeColor
       fill: @wb.fillColor
