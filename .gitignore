@@ -16,9 +16,6 @@ results
 build
 .grunt
 .sass-cache
-public/main.css*
-public/vendor.js
-public/whiteboard.js
 
 bower_components
 node_modules
