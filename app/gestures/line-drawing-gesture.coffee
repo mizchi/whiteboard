@@ -1,32 +1,22 @@
-Gesture = require './base/gesture'
+DragGesture = require './base/drag-gesture'
 module.exports =
-class LineDrawingGesture extends Gesture
-  constructor: ->
-    super
-    @startPoint = null
-    @endPoint = null
-    @lastShape = null
-
-  onTouch: (ev) =>
-    @startPoint = @getPoint ev
-    @lastShape = null
+class LineDrawingGesture extends DragGesture
 
   onDragStart: (ev) =>
     @lastShape = null
+    console.log 'onDragStart'
 
   onDrag: (ev) =>
-    @endPoint = @getPoint ev
-
+    console.log 'onDrag'
     @lastShape?.remove()
-    [sx, sy] = @startPoint
-    [ex, ey] = @endPoint
+    [sx, sy] = @firstPoint()
+    [ex, ey] = @lastPoint()
 
     line = @paper.line sx, sy, ex, ey
     line.attr
       stroke: @wb.strokeColor
       fill: @wb.fillColor
       strokeWidth: 1
-      # fill: 'transparent'
     @lastShape = line
 
   onDragEnd: (ev) =>

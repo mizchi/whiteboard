@@ -6,9 +6,7 @@ EraserGesture = require './gestures/eraser-gesture'
 GrabGesture = require './gestures/eraser-gesture'
 
 EventEmitter = require './utils/event-emitter'
-extend = (obj, props) =>
-  for k, v of props then obj[k] = v
-  obj
+extend = require './utils/extend'
 
 module.exports =
 class window.Whiteboard
@@ -39,11 +37,9 @@ class window.Whiteboard
       when 'grab'   then GrabGesture
 
     gesture = new Gesture @
-    new Hammer(@svg)
-      .on 'touch',     (ev) => gesture.onTouch(ev)
-      .on 'dragstart', (ev) => gesture.onDragStart(ev)
-      .on 'drag',      (ev) => gesture.onDrag ev
-      .on 'dragend',   (ev) => gesture.onDragEnd ev
+    @$svg.on 'mousedown touchstart', (ev) => gesture._onTouchStart(ev)
+    @$svg.on 'mousemove touchmove', (ev) => gesture._onTouchMove(ev)
+    @$svg.on 'mouseup touchend', (ev) => gesture._onTouchEnd(ev)
 
   constructor: (selector, {preview} = {}) ->
     @strokeColor = strokeColor = 'black'
@@ -60,7 +56,7 @@ class window.Whiteboard
 
     {left: offsetX, top: offsetY} = @$svg.position()
     @offsetX = offsetX
-    @offsetY = offsetY+32
+    @offsetY = offsetY
 
     @setMode 'free'
     @tolelance = 2
@@ -89,24 +85,16 @@ class window.Whiteboard
       @setMode 'grab'
       grabbing = false
 
-      $svg.hammer().on 'mousedown', '*', (event) =>
+      $svg.on 'mousedown', '*', (event) =>
         grabbing = true
-        # console.log event.target
 
-      $svg.hammer().on 'mousemove', '*', (ev) ->
+      $svg.on 'mousemove', '*', (ev) ->
         return unless grabbing
         console.log ev
         console.log 'hammer mousedown'
 
-      $svg.hammer().on 'mouseup', ->
+      $svg.on 'mouseup', ->
         grabbing = false
-
-      # $svg.on 'mousemove', '*', (event) =>
-      #   return unless grabbing
-      #   console.log event.target
-      #
-      # $svg.on 'mouseup', '*', (event) =>
-      #   grabbing = false
 
     $fillColor = @$('input.fill-color').on 'keyup', =>
       @fillColor = @$fillColor.val()
@@ -117,3 +105,5 @@ class window.Whiteboard
     @$('.undo').on 'click', => @trigger 'undo'
 
     @$('.redo').on 'click', => @trigger 'redo'
+
+    mc = new Hammer.Manager(@svg)

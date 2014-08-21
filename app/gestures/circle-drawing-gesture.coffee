@@ -1,22 +1,19 @@
-Gesture = require './base/gesture'
+# Gesture = require './base/gesture'
+DragGesture = require './base/drag-gesture'
 module.exports =
-class CircleDrawingGesture extends Gesture
+class CircleDrawingGesture extends DragGesture
   constructor: ->
     super
     @startPoint = null
     @endPoint   = null
     @lastShape  = null
 
-  onTouch: (ev) =>
-    @startPoint = @getPoint(ev)
-    @lastShape = null
-
   onDrag: (ev) =>
     @endPoint = @getPoint(ev)
     @lastShape?.remove()
 
-    [sx, sy] = @startPoint
-    [ex, ey] = @endPoint
+    [sx, sy] = @firstPoint()
+    [ex, ey] = @lastPoint()
 
     x = sx
     y = sy
@@ -31,4 +28,4 @@ class CircleDrawingGesture extends Gesture
 
   onDragEnd: (ev) =>
     @wb.update()
-
+    @lastShape = null

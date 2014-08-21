@@ -1,24 +1,20 @@
-Gesture = require './base/gesture'
+DragGesture = require './base/drag-gesture'
 module.exports =
-class RectDrawingGesture extends Gesture
+class RectDrawingGesture extends DragGesture
   constructor: ->
     super
     @startPoint = null
     @endPoint = null
     @lastShape = null
 
-  onTouch: (ev) =>
-    @lastShape = null
-    @startPoint = @getPoint ev
-
   onDragStart: (ev) =>
+    @lastShape = null
 
   onDrag: (ev) =>
-    @endPoint = @getPoint ev
     @lastShape?.remove()
 
-    [sx, sy] = @startPoint
-    [ex, ey] = @endPoint
+    [sx, sy] = @firstPoint()
+    [ex, ey] = @lastPoint()
 
     x = Math.min sx, ex
     y = Math.min sy, ey

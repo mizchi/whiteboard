@@ -1,41 +1,34 @@
 Gesture = require './base/gesture'
+DragGesture = require './base/drag-gesture'
+
+_simplify = (points, tolelance) ->
+  simplify(
+    (points.map ([x, y]) => {x, y}), tolelance, false
+  ).map ({x, y}) => [x, y]
+
 module.exports =
-class FreeDrawingGesture extends Gesture
-  constructor: ->
-    super
-    @paths = null
+class FreeDrawingGesture extends DragGesture
+  onDragStart: (ev) =>
     @lastPath = null
 
-  onTouch: (ev) =>
-    @paths = []
-    @paths.push @getPoint(ev)
-
   onDrag: (ev) =>
-    @lastPath?.remove(ev)
-    @paths.push @getPoint(ev)
+    @lastPath?.remove()
+
     @lastPath = @paper.polyline
-      points: _.flatten(@paths)
-      fill:"none"
+      points: _.flatten(@points)
+      fill: "none"
       stroke: @wb.strokeColor
       fill: @wb.fillColor
       strokeWidth: 1
-
-  simplify: (paths) ->
-    simplify(
-      (paths.map ([x, y]) => {x, y}), @wb.tolelance, false
-    ).map ({x, y}) => [x, y]
 
   onDragEnd: (ev) =>
     @lastPath?.remove()
 
-    simplified = @simplify (@paths)
-
-    @lastPath = @wb.paper.polyline
+    simplified = _simplify(@points, @wb.tolelance)
+    @lastPath = @paper.polyline
       points: simplified
       stroke: @wb.strokeColor
       fill: @wb.fillColor
       strokeWidth: 1
-    @paths = []
 
-    @lastPath = null
     @wb.update()
