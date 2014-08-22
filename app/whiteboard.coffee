@@ -8,6 +8,26 @@ GrabGesture = require './gestures/eraser-gesture'
 EventEmitter = require './utils/event-emitter'
 extend = require './utils/extend'
 
+pointsToSegments = ([[sx, sy], body...]) ->
+  [].concat [['M', sx, sy]], body.map do =>
+    lx = sx
+    ly = sy
+    ([x, y]) ->
+      dx = x - lx
+      dy = y - ly
+      lx = x
+      ly = y
+      ['l', dx, dy]
+
+segementsToPoints = ([[t, sx, sy], body...]) ->
+  [].concat [[sx, sy]], body.map do =>
+    cx = sx
+    cy = sy
+    ([t, x, y]) ->
+      cx += x
+      cy += y
+      [cx, cy]
+
 module.exports =
 class window.Whiteboard
   template = require './templates/whiteboard'
@@ -37,6 +57,7 @@ class window.Whiteboard
   hideBackground: -> @$('.bg').hide()
 
   setMode: (mode) =>
+    @mode = mode
     @$svg.off()
     Gesture = switch mode
       when 'free'   then FreeDrawingGesture
@@ -75,7 +96,6 @@ class window.Whiteboard
     @offsetX = offsetX
     @offsetY = offsetY
 
-    @setMode 'free'
     @tolelance = 2
     $tolelance = $('.tolelance-value')
     @$('.tolelance-plus').on 'click', =>
@@ -102,16 +122,16 @@ class window.Whiteboard
       @setMode 'grab'
       grabbing = false
 
-      $svg.on 'mousedown', '*', (event) =>
-        grabbing = true
-
-      $svg.on 'mousemove', '*', (ev) ->
-        return unless grabbing
-        console.log ev
-        console.log 'hammer mousedown'
-
-      $svg.on 'mouseup', ->
-        grabbing = false
+      # $svg.on 'mousedown', '*', (event) =>
+      #   grabbing = true
+      #
+      # $svg.on 'mousemove', '*', (ev) ->
+      #   return unless grabbing
+      #   console.log ev
+      #   console.log 'hammer mousedown'
+      #
+      # $svg.on 'mouseup', ->
+      #   grabbing = false
 
     $fillColor = @$('input.fill-color').on 'keyup', =>
       @fillColor = @$fillColor.val()
@@ -133,3 +153,30 @@ class window.Whiteboard
     ]
     @ui = @paper.g()
     @setLayer(0)
+    @setMode 'free'
+
+
+    # $$path = Snap.select('path')
+    # $$path.click =>
+    #   path = Snap.parsePathString($$path.attr('d'))
+    #   points = segementsToPoints path
+    #   points.forEach ([sx, sy], index) =>
+    #     $$circle = @ui.circle sx, sy, 5
+    #     $$circle.attr fill: 'transparent', stroke: 'black', strokeDasharray:"1,2,1"
+    #     lx = sx
+    #     ly = sy
+    #     $$circle.drag (dx, dy) ->
+    #       # [x, y] = points[index]
+    #       rx = lx + dx
+    #       ry = ly + dy
+    #       points[index] = [rx, ry]
+    #       segs = pointsToSegments points
+    #       $$path.attr('d', segs)
+    #       $$circle.attr cx: rx, cy: ry
+    #     , (x, y, p) ->
+    #       console.log 'drag start', arguments...
+    #       [lx, ly] = points[index]
+    #       #
+    #       # lx = x
+    #       # ly = y
+    #     # , ->
