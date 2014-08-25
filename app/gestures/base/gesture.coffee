@@ -6,6 +6,12 @@ class Gesture
   constructor: (@wb) ->
     @paper = @wb.paper
 
+  select: ->
+    Snap(@wb.svg).select arguments...
+
+  selectAll: ->
+    Snap(@wb.svg).selectAll arguments...
+
   currentLayer: -> @wb.layer
 
   _onTouch: -> @onTouch arguments...
@@ -29,6 +35,7 @@ class Gesture
   _onTouchEnd: -> @onTouchEnd arguments...
   onTouchEnd: ->
 
+  dispose: ->
 
   getPoint: (ev) =>
     # TODO: Fix for android

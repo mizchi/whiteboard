@@ -3,7 +3,7 @@ FreeDrawingGesture = require './gestures/free-drawing-gesture'
 LineDrawingGesture = require './gestures/line-drawing-gesture'
 CircleDrawingGesture = require './gestures/circle-drawing-gesture'
 EraserGesture = require './gestures/eraser-gesture'
-GrabGesture = require './gestures/eraser-gesture'
+GrabGesture = require './gestures/grab-gesture'
 
 EventEmitter = require './utils/event-emitter'
 extend = require './utils/extend'
@@ -52,11 +52,17 @@ class window.Whiteboard
     @layer = @layers[n]
     @layer.node.style.visibility = 'visible'
 
+  clearUI: ->
+    Snap(@ui).selectAll('*').forEach (i) -> i.remove()
+
   showBackground: -> @$('.bg').show()
 
   hideBackground: -> @$('.bg').hide()
 
   setMode: (mode) =>
+    # dispose previous gesture
+    @_gesture?.dispose()
+
     @mode = mode
     @$svg.off()
     Gesture = switch mode
@@ -67,7 +73,8 @@ class window.Whiteboard
       when 'eraser' then EraserGesture
       when 'grab'   then GrabGesture
 
-    gesture = new Gesture @
+    @_gesture = gesture = new Gesture @
+    # debugger
     @$svg.on 'mousedown touchstart', (ev) => gesture._onTouchStart(ev)
     @$svg.on 'mouseup touchend', (ev) => gesture._onTouchEnd(ev)
 
@@ -154,29 +161,3 @@ class window.Whiteboard
     @ui = @paper.g()
     @setLayer(0)
     @setMode 'free'
-
-
-    # $$path = Snap.select('path')
-    # $$path.click =>
-    #   path = Snap.parsePathString($$path.attr('d'))
-    #   points = segementsToPoints path
-    #   points.forEach ([sx, sy], index) =>
-    #     $$circle = @ui.circle sx, sy, 5
-    #     $$circle.attr fill: 'transparent', stroke: 'black', strokeDasharray:"1,2,1"
-    #     lx = sx
-    #     ly = sy
-    #     $$circle.drag (dx, dy) ->
-    #       # [x, y] = points[index]
-    #       rx = lx + dx
-    #       ry = ly + dy
-    #       points[index] = [rx, ry]
-    #       segs = pointsToSegments points
-    #       $$path.attr('d', segs)
-    #       $$circle.attr cx: rx, cy: ry
-    #     , (x, y, p) ->
-    #       console.log 'drag start', arguments...
-    #       [lx, ly] = points[index]
-    #       #
-    #       # lx = x
-    #       # ly = y
-    #     # , ->
