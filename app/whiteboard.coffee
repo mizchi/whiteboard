@@ -59,6 +59,7 @@ class window.Whiteboard
 
   setMode: (mode) =>
     # dispose previous gesture
+    @$('.mode').text mode
     @_gesture?.dispose()
 
     @mode = mode
