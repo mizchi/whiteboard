@@ -25,8 +25,8 @@ class FreeDrawingGesture extends DragGesture
 
   onDragEnd: (ev) =>
     @lastPath?.remove()
-    segs = pointsToSegments _simplify @points
 
+    segs = pointsToSegments _simplify @points
     @currentLayer().path
       path: segs
       fill: "none"

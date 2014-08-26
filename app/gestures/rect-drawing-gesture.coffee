@@ -22,7 +22,7 @@ class RectDrawingGesture extends DragGesture
     w = Math.abs sx - ex
     h = Math.abs sy - ey
 
-    rect = @paper.rect x, y, w, h
+    rect = @currentLayer().rect x, y, w, h
     rect.attr
       stroke: @wb.strokeColor
       fill: @wb.fillColor

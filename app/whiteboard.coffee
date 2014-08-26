@@ -7,26 +7,8 @@ GrabGesture = require './gestures/grab-gesture'
 
 EventEmitter = require './utils/event-emitter'
 extend = require './utils/extend'
-
-pointsToSegments = ([[sx, sy], body...]) ->
-  [].concat [['M', sx, sy]], body.map do =>
-    lx = sx
-    ly = sy
-    ([x, y]) ->
-      dx = x - lx
-      dy = y - ly
-      lx = x
-      ly = y
-      ['l', dx, dy]
-
-segementsToPoints = ([[t, sx, sy], body...]) ->
-  [].concat [[sx, sy]], body.map do =>
-    cx = sx
-    cy = sy
-    ([t, x, y]) ->
-      cx += x
-      cy += y
-      [cx, cy]
+{getAnchorPoints} = require './utils/utils'
+int = parseInt
 
 module.exports =
 class window.Whiteboard
@@ -59,6 +41,22 @@ class window.Whiteboard
 
   hideBackground: -> @$('.bg').hide()
 
+  getAnchorPoints: -> getAnchorPoints(@layer)
+
+  showGrid: (xs, ys) ->
+    {xs, ys} = getAnchorPoints(@layer)
+    for x in xs
+      @ui.line
+        x1: x, x2: x
+        y1: 0, y2: 320
+        style: "stroke:rgba(200,200,200, 0.5);stroke-width:1"
+
+    for y in ys
+      @ui.line
+        x1: 0, x2: 640
+        y1: y, y2: y
+        style: "stroke:rgba(200,200,200, 0.5);stroke-width:1"
+
   setMode: (mode) =>
     # dispose previous gesture
     @_gesture?.dispose()
@@ -74,7 +72,6 @@ class window.Whiteboard
       when 'grab'   then GrabGesture
 
     @_gesture = gesture = new Gesture @
-    # debugger
     @$svg.on 'mousedown touchstart', (ev) => gesture._onTouchStart(ev)
     @$svg.on 'mouseup touchend', (ev) => gesture._onTouchEnd(ev)
 
@@ -87,6 +84,8 @@ class window.Whiteboard
       $y.text y
 
   constructor: (selector, {preview} = {}) ->
+    window.whiteboard = @
+
     @strokeColor = strokeColor = 'black'
     @fillColor = fillColor = 'transparent'
 
@@ -128,17 +127,6 @@ class window.Whiteboard
       $svg.off()
       @setMode 'grab'
       grabbing = false
-
-      # $svg.on 'mousedown', '*', (event) =>
-      #   grabbing = true
-      #
-      # $svg.on 'mousemove', '*', (ev) ->
-      #   return unless grabbing
-      #   console.log ev
-      #   console.log 'hammer mousedown'
-      #
-      # $svg.on 'mouseup', ->
-      #   grabbing = false
 
     $fillColor = @$('input.fill-color').on 'keyup', =>
       @fillColor = @$fillColor.val()

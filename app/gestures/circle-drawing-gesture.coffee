@@ -6,7 +6,6 @@ class CircleDrawingGesture extends DragGesture
     super
     @startPoint = null
     @endPoint   = null
-    @lastShape  = null
 
   onDrag: (ev) =>
     @endPoint = @getPoint(ev)
@@ -19,7 +18,7 @@ class CircleDrawingGesture extends DragGesture
     y = sy
 
     r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
-    circle = @wb.paper.circle x, y, r
+    circle = @currentLayer().circle x, y, r
     circle.attr
       strokeWidth: 1
       stroke: @wb.strokeColor

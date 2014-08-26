@@ -10,7 +10,7 @@ class LineDrawingGesture extends DragGesture
     [sx, sy] = @firstPoint()
     [ex, ey] = @lastPoint()
 
-    line = @palate.line sx, sy, ex, ey
+    line = @currentLayer().line sx, sy, ex, ey
     line.attr
       stroke: @wb.strokeColor
       fill: @wb.fillColor
