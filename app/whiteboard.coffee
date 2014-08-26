@@ -118,10 +118,10 @@ class window.Whiteboard
     @$('.edit-circle').on 'click', => @setMode 'circle'
     @$('.edit-eraser').on 'click', =>
       @setMode 'eraser'
-      $svg.on 'mousemove', '*', (event) =>
-        return unless @eraser
-        $(event.target).remove()
-        @update()
+      # $svg.on 'mousemove', '*', (event) =>
+      #   return unless @eraser
+      #   $(event.target).remove()
+      #   @update()
 
     @$('.edit-grab').on 'click', =>
       $svg.off()

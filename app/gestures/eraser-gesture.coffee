@@ -3,9 +3,10 @@ module.exports =
 class EraserDrawingGesture extends Gesture
   constructor: ->
     super
-  onTouch: (ev) =>
-  onDragStart: (ev) =>
-    @wb.eraser = true
-  onDrag: (ev) =>
-  onDragEnd: (ev) =>
-    @wb.eraser = false
+    @eraser = false
+    @currentLayer().selectAll('*').forEach ($shape) =>
+      $shape.mousemove =>
+        if @eraser then $shape.remove()
+
+    @paper.mousedown => @eraser = true
+    @paper.mouseup => @eraser = false
