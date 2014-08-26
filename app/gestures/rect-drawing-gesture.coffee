@@ -32,3 +32,6 @@ class RectDrawingGesture extends DragGesture
 
   onDragEnd: (ev) =>
     @wb.update()
+    @wb.setMode 'grab'
+    @wb._gesture.focus @lastShape
+    @lastShape = null
