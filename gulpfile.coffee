@@ -18,7 +18,7 @@ gulp.task 'reload', ->
 
 gulp.task 'js', ->
   browserify
-    entries: ['./app/initialize.coffee']
+    entries: ['./app/whiteboard.coffee']
     extensions: ['.coffee','.jade', '.js']
   .transform 'coffeeify'
   .transform 'jadeify'

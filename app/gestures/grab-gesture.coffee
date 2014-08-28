@@ -35,6 +35,31 @@ class GrabGesture extends Gesture
 
         $circle
 
+  # setLineClick: ($line) ->
+  #   $line.click =>
+  #     @_$points = $points = points.map ([sx, sy], index) =>
+  #       $circle = @wb.ui.circle sx, sy, 5
+  #       $circle.attr fill: 'transparent', stroke: 'black' #, strokeDasharray:"1,2,1"
+  #       lx = sx
+  #       ly = sy
+  #       $circle.drag (dx, dy) =>
+  #         rx = lx + dx
+  #         ry = ly + dy
+  #         points[index] = [rx, ry]
+  #         segs = pointsToSegments points
+  #         $path.attr('d', segs)
+  #         $circle.attr cx: rx, cy: ry
+  #         false
+  #       , (x, y, ev) ->
+  #         [lx, ly] = points[index]
+  #         ev.stopPropagation()
+  #         false
+  #       , (ev) =>
+  #         ev.stopPropagation()
+  #         @wb.update()
+  #
+  #       $circle
+
   focus: ($shape) ->
     switch $shape.type
       when 'rect'

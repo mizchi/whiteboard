@@ -162,7 +162,7 @@ module.exports = Gesture = (function() {
 })();
 
 
-},{"../../utils/event-emitter":13,"../../utils/extend":14}],3:[function(require,module,exports){
+},{"../../utils/event-emitter":12,"../../utils/extend":13}],3:[function(require,module,exports){
 var CircleDrawingGesture, DragGesture,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -331,7 +331,7 @@ module.exports = FreeDrawingGesture = (function(_super) {
 })(DragGesture);
 
 
-},{"../utils/utils":15,"./base/drag-gesture":1,"./base/gesture":2}],6:[function(require,module,exports){
+},{"../utils/utils":14,"./base/drag-gesture":1,"./base/gesture":2}],6:[function(require,module,exports){
 var Gesture, GrabGesture, adjustToNearPoint, int, pointsToSegments, segementsToPoints, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -682,54 +682,153 @@ module.exports = GrabGesture = (function(_super) {
 })(Gesture);
 
 
-},{"../utils/utils":15,"./base/gesture":2}],7:[function(require,module,exports){
-var DragGesture, LineDrawingGesture,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+},{"../utils/utils":14,"./base/gesture":2}],7:[function(require,module,exports){
+var DragGesture, Gesture, LineDrawingGesture, getNearPoint, getPathPositions, pointsToSegments, segementsToPoints, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 DragGesture = require('./base/drag-gesture');
 
+Gesture = require('./base/gesture');
+
+_ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints;
+
+getPathPositions = function($group) {
+  var points;
+  points = [];
+  $group.selectAll('path').forEach((function(_this) {
+    return function($path) {
+      var ps, segments;
+      segments = Snap.parsePathString($path.attr('d'));
+      ps = segementsToPoints(segments);
+      return points.push.apply(points, ps.map(function(_arg) {
+        var x, y;
+        x = _arg[0], y = _arg[1];
+        return [x, y, $path];
+      }));
+    };
+  })(this));
+  return points;
+};
+
+getNearPoint = function(_arg, points, force) {
+  var costs, minCost, minIndex, sx, sy, _ref1;
+  sx = _arg[0], sy = _arg[1];
+  if (force == null) {
+    force = 10;
+  }
+  if (points.length === 0) {
+    return null;
+  }
+  costs = points.map(function(_arg1, index) {
+    var x, y;
+    x = _arg1[0], y = _arg1[1];
+    return Math.abs(sx - x) + Math.abs(sy - y);
+  });
+  _ref1 = costs.reduce(function(_arg1, cost, index) {
+    var minCost, minIndex;
+    minIndex = _arg1[0], minCost = _arg1[1];
+    if (minCost > cost) {
+      return [index, cost];
+    } else {
+      return [minIndex, minCost];
+    }
+  }, [0, costs[0]]), minIndex = _ref1[0], minCost = _ref1[1];
+  if (minCost <= 10) {
+    return points[minIndex].concat(minIndex);
+  } else {
+    return null;
+  }
+};
+
 module.exports = LineDrawingGesture = (function(_super) {
   __extends(LineDrawingGesture, _super);
 
+  LineDrawingGesture.prototype.dispose = function() {
+    return this.paper.undrag();
+  };
+
+  LineDrawingGesture.prototype.showAnchorsToShape = function(shape) {
+    var points, segs;
+    segs = Snap.parsePathString(shape.attr('d'));
+    points = segementsToPoints(segs);
+    return points.map((function(_this) {
+      return function(_arg) {
+        var $circle, x, y;
+        x = _arg[0], y = _arg[1];
+        $circle = _this.wb.ui.circle({
+          cx: x,
+          cy: y,
+          r: 8,
+          fill: 'transparent',
+          stroke: 'black'
+        });
+        $circle.mousemove(function() {
+          return $circle.attr('stroke', 'red');
+        });
+        return $circle.mouseout(function() {
+          return $circle.attr('stroke', 'black');
+        });
+      };
+    })(this));
+  };
+
   function LineDrawingGesture() {
-    this.onDragEnd = __bind(this.onDragEnd, this);
-    this.onDrag = __bind(this.onDrag, this);
-    this.onDragStart = __bind(this.onDragStart, this);
-    return LineDrawingGesture.__super__.constructor.apply(this, arguments);
+    var ex, ey, mode, pathArray, sx, sy;
+    LineDrawingGesture.__super__.constructor.apply(this, arguments);
+    this.nearPoints = getPathPositions(this.currentLayer());
+    sx = null;
+    sy = null;
+    ex = null;
+    ey = null;
+    mode = '';
+    pathArray = null;
+    this.paper.drag((function(_this) {
+      return function(dx, dy, x, y, event) {
+        var p, segs, _ref1, _ref2;
+        _ref1 = [dx + sx, dy + sy], ex = _ref1[0], ey = _ref1[1];
+        if (p = getNearPoint([ex, ey], _this.nearPoints)) {
+          ex = p[0], ey = p[1];
+        }
+        segs = pointsToSegments([[sx, sy], [ex, ey]]);
+        if ((_ref2 = _this.lastShape) != null) {
+          _ref2.remove();
+        }
+        return _this.lastShape = _this.currentLayer().path({
+          path: segs,
+          fill: "none",
+          stroke: _this.wb.strokeColor,
+          fill: _this.wb.fillColor,
+          strokeWidth: 1
+        });
+      };
+    })(this), (function(_this) {
+      return function(x, y, event) {
+        var p;
+        sx = event.offsetX;
+        sy = event.offsetY;
+        if (p = getNearPoint([sx, sy], _this.nearPoints)) {
+          mode = 'head';
+          return sx = p[0], sy = p[1], p;
+        } else {
+          return mode = 'isolate';
+        }
+      };
+    })(this), (function(_this) {
+      return function() {
+        _this.nearPoints = getPathPositions(_this.currentLayer());
+        _this.showAnchorsToShape(_this.lastShape);
+        return _this.lastShape = null;
+      };
+    })(this));
   }
-
-  LineDrawingGesture.prototype.onDragStart = function(ev) {
-    return this.lastShape = null;
-  };
-
-  LineDrawingGesture.prototype.onDrag = function(ev) {
-    var ex, ey, line, sx, sy, _ref, _ref1, _ref2;
-    if ((_ref = this.lastShape) != null) {
-      _ref.remove();
-    }
-    _ref1 = this.firstPoint(), sx = _ref1[0], sy = _ref1[1];
-    _ref2 = this.lastPoint(), ex = _ref2[0], ey = _ref2[1];
-    line = this.currentLayer().line(sx, sy, ex, ey);
-    line.attr({
-      stroke: this.wb.strokeColor,
-      fill: this.wb.fillColor,
-      strokeWidth: 1
-    });
-    return this.lastShape = line;
-  };
-
-  LineDrawingGesture.prototype.onDragEnd = function(ev) {
-    return this.wb.update();
-  };
 
   return LineDrawingGesture;
 
-})(DragGesture);
+})(Gesture);
 
 
-},{"./base/drag-gesture":1}],8:[function(require,module,exports){
+},{"../utils/utils":14,"./base/drag-gesture":1,"./base/gesture":2}],8:[function(require,module,exports){
 var DragGesture, RectDrawingGesture,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -839,51 +938,6 @@ module.exports = HistoryManager = (function() {
 
 
 },{}],10:[function(require,module,exports){
-var HistoryManager, Preview, Whiteboard;
-
-Whiteboard = require('./whiteboard');
-
-HistoryManager = require('./history-manager');
-
-Preview = require('./preview');
-
-$((function(_this) {
-  return function() {
-    var hist, preview, whiteboard;
-    whiteboard = new Whiteboard('.whiteboard-container');
-    preview = new Preview('.preview');
-    hist = new HistoryManager;
-    whiteboard.on('changed', function(svg) {
-      hist.pushHistory(svg);
-      return preview.update(hist.current());
-    });
-    whiteboard.on('undo', function(svg) {
-      var next;
-      hist.undo();
-      next = hist.current();
-      preview.update(next);
-      return whiteboard.setSVG(next);
-    });
-    whiteboard.on('redo', function(svg) {
-      var next;
-      hist.redo();
-      next = hist.current();
-      preview.update(next);
-      return whiteboard.setSVG(next);
-    });
-    whiteboard.on('hide-preview', function(svg) {
-      console.log('hide');
-      return preview.hide();
-    });
-    return whiteboard.on('show-preview', function(svg) {
-      console.log('show');
-      return preview.show();
-    });
-  };
-})(this));
-
-
-},{"./history-manager":9,"./preview":11,"./whiteboard":16}],11:[function(require,module,exports){
 var Preview;
 
 module.exports = Preview = (function() {
@@ -921,7 +975,7 @@ module.exports = Preview = (function() {
 })();
 
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var jade = require("jade/runtime");
 
 module.exports = function template(locals) {
@@ -929,9 +983,9 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div><button class=\"edit-grab\">grab</button><button class=\"edit-clear\">clear</button><button class=\"edit-free\">drawing</button><button class=\"edit-rect\">rect</button><button class=\"edit-circle\">circle</button><button class=\"edit-line\">line</button><button class=\"edit-eraser\">eraser</button>/<button class=\"undo\">undo</button><button class=\"redo\">redo</button><span class=\"mode\"></span>&nbsp;<span class=\"mouse-x\"></span>:<span class=\"mouse-y\"></span></div><div style=\"position:relative; width:640px; height:320px; padding:0 margin: 0;\" class=\"main\"><div style=\"position:absolute;padding:0; margin: 0; width:100%; height: 100%; overflow: scroll; -webkit-user-select: none;\" class=\"bg\"></div><svg width=\"640\" height=\"320\" style=\"position:absolute;padding:0 margin: 0;cursor: crosshair\" class=\"whiteboard\"></svg></div><div><button class=\"layer0\">1</button><button class=\"layer1\">2</button><button class=\"layer2\">3</button></div><div><span>tolelance:</span><span class=\"tolelance-value\">2</span><button class=\"tolelance-plus\">+</button><button class=\"tolelance-minus\">-</button><span>stroke</span><input value=\"black\" class=\"stroke-color\"/><span>fill</span><input value=\"transparent\" class=\"fill-color\"/></div><div class=\"preview\"></div>");;return buf.join("");
+buf.push("<div><button class=\"edit-grab\">grab</button><button class=\"edit-clear\">clear</button><button class=\"edit-free\">drawing</button><button class=\"edit-rect\">rect</button><button class=\"edit-circle\">circle</button><button class=\"edit-line\">line</button><button class=\"edit-eraser\">eraser</button>/<button class=\"undo\">undo</button><button class=\"redo\">redo</button><span class=\"mode\"></span>&nbsp;<span class=\"mouse-x\"></span><span class=\"mouse-y\"></span></div><div style=\"position:relative; width:640px; height:320px; padding:0 margin: 0;\" class=\"main\"><div style=\"position:absolute;padding:0; margin: 0; width:100%; height: 100%; overflow: scroll; -webkit-user-select: none;\" class=\"bg\"></div><svg width=\"640\" height=\"320\" style=\"position:absolute;padding:0 margin: 0;cursor: crosshair\" class=\"whiteboard\"></svg></div><div><button class=\"layer0\">1</button><button class=\"layer1\">2</button><button class=\"layer2\">3</button></div><div><span>tolelance:</span><span class=\"tolelance-value\">2</span><button class=\"tolelance-plus\">+</button><button class=\"tolelance-minus\">-</button><span>stroke</span><input value=\"black\" class=\"stroke-color\"/><span>fill</span><input value=\"transparent\" class=\"fill-color\"/></div><div class=\"preview\"></div>");;return buf.join("");
 };
-},{"jade/runtime":17}],13:[function(require,module,exports){
+},{"jade/runtime":16}],12:[function(require,module,exports){
 var EventEmitter,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
@@ -992,7 +1046,7 @@ module.exports = EventEmitter = (function() {
 })();
 
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var extend;
 
 module.exports = extend = (function(_this) {
@@ -1007,7 +1061,7 @@ module.exports = extend = (function(_this) {
 })(this);
 
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var adjustToNearPoint, getAnchorPoints, int, pointsToSegments, segementsToPoints,
   __slice = [].slice;
 
@@ -1100,8 +1154,8 @@ module.exports = {
 };
 
 
-},{}],16:[function(require,module,exports){
-var CircleDrawingGesture, EraserGesture, EventEmitter, FreeDrawingGesture, GrabGesture, LineDrawingGesture, RectDrawingGesture, extend, getAnchorPoints, int,
+},{}],15:[function(require,module,exports){
+var CircleDrawingGesture, EraserGesture, EventEmitter, FreeDrawingGesture, GrabGesture, HistoryManager, LineDrawingGesture, Preview, RectDrawingGesture, Whiteboard, extend, getAnchorPoints, int,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 RectDrawingGesture = require('./gestures/rect-drawing-gesture');
@@ -1123,6 +1177,12 @@ extend = require('./utils/extend');
 getAnchorPoints = require('./utils/utils').getAnchorPoints;
 
 int = parseInt;
+
+Whiteboard = require('./whiteboard');
+
+HistoryManager = require('./history-manager');
+
+Preview = require('./preview');
 
 module.exports = window.Whiteboard = (function() {
   var template;
@@ -1360,15 +1420,56 @@ module.exports = window.Whiteboard = (function() {
     this.layers = [this.paper.g(), this.paper.g(), this.paper.g()];
     this.ui = this.paper.g();
     this.setLayer(0);
-    this.setMode('free');
+    this.setMode('line');
   }
+
+  Whiteboard.start = function(selector) {
+    var hist, preview, whiteboard;
+    whiteboard = new Whiteboard(selector);
+    preview = new Preview('.preview');
+    hist = new HistoryManager;
+    whiteboard.on('changed', (function(_this) {
+      return function(svg) {
+        hist.pushHistory(svg);
+        return preview.update(hist.current());
+      };
+    })(this));
+    whiteboard.on('undo', (function(_this) {
+      return function(svg) {
+        var next;
+        hist.undo();
+        next = hist.current();
+        preview.update(next);
+        return whiteboard.setSVG(next);
+      };
+    })(this));
+    whiteboard.on('redo', (function(_this) {
+      return function(svg) {
+        var next;
+        hist.redo();
+        next = hist.current();
+        preview.update(next);
+        return whiteboard.setSVG(next);
+      };
+    })(this));
+    whiteboard.on('hide-preview', (function(_this) {
+      return function(svg) {
+        return preview.hide();
+      };
+    })(this));
+    return whiteboard.on('show-preview', (function(_this) {
+      return function(svg) {
+        return preview.show();
+      };
+    })(this));
+  };
 
   return Whiteboard;
 
 })();
 
 
-},{"./gestures/circle-drawing-gesture":3,"./gestures/eraser-gesture":4,"./gestures/free-drawing-gesture":5,"./gestures/grab-gesture":6,"./gestures/line-drawing-gesture":7,"./gestures/rect-drawing-gesture":8,"./templates/whiteboard":12,"./utils/event-emitter":13,"./utils/extend":14,"./utils/utils":15}],17:[function(require,module,exports){
+},{"./gestures/circle-drawing-gesture":3,"./gestures/eraser-gesture":4,"./gestures/free-drawing-gesture":5,"./gestures/grab-gesture":6,"./gestures/line-drawing-gesture":7,"./gestures/rect-drawing-gesture":8,"./history-manager":9,"./preview":10,"./templates/whiteboard":11,"./utils/event-emitter":12,"./utils/extend":13,"./utils/utils":14,"./whiteboard":15}],16:[function(require,module,exports){
 (function (global){
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.jade=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
@@ -1581,4 +1682,4 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
 (1)
 });
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[10])
+},{}]},{},[15])

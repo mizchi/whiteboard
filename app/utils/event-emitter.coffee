@@ -11,7 +11,6 @@ class EventEmitter
       delete @events
       return @
     if fn?
-      # n = _.findIndex @events[eventName], (i) => i is fn
       n = @events[eventName]?.indexOf fn
       if n > -1
         @_events[eventName].splice n, 1
@@ -23,4 +22,3 @@ class EventEmitter
     @_events?[eventName]?.map (callback) =>
       callback args...
     @
-

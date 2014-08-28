@@ -10,6 +10,10 @@ extend = require './utils/extend'
 {getAnchorPoints} = require './utils/utils'
 int = parseInt
 
+Whiteboard     = require './whiteboard'
+HistoryManager = require './history-manager'
+Preview        = require './preview'
+
 module.exports =
 class window.Whiteboard
   template = require './templates/whiteboard'
@@ -149,4 +153,33 @@ class window.Whiteboard
     ]
     @ui = @paper.g()
     @setLayer(0)
-    @setMode 'free'
+    @setMode 'line'
+
+  @start: (selector) ->
+    whiteboard = new Whiteboard(selector)
+    preview = new Preview '.preview'
+    hist = new HistoryManager
+
+    whiteboard.on 'changed', (svg) =>
+      hist.pushHistory svg
+      preview.update hist.current()
+
+    whiteboard.on 'undo', (svg) =>
+      hist.undo()
+      next = hist.current()
+
+      preview.update next
+      whiteboard.setSVG next
+
+    whiteboard.on 'redo', (svg) =>
+      hist.redo()
+      next = hist.current()
+
+      preview.update next
+      whiteboard.setSVG next
+
+    whiteboard.on 'hide-preview', (svg) =>
+      preview.hide()
+
+    whiteboard.on 'show-preview', (svg) =>
+      preview.show()

@@ -27,9 +27,7 @@ $ =>
     whiteboard.setSVG next
 
   whiteboard.on 'hide-preview', (svg) =>
-    console.log 'hide'
     preview.hide()
 
   whiteboard.on 'show-preview', (svg) =>
-    console.log 'show'
     preview.show()
