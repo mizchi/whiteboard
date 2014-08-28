@@ -183,3 +183,5 @@ class window.Whiteboard
 
     whiteboard.on 'show-preview', (svg) =>
       preview.show()
+
+    whiteboard

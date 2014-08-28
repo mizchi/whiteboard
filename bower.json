@@ -17,7 +17,7 @@
     "jquery": "~2.1.1",
     "lodash": "~2.4.1",
     "hammerjs": "~2.0.2",
-    "snap.svg": "~0.3.0",
+    "Snap.svg": "~0.3.0",
     "simplify-js": "git@github.com:mourner/simplify-js.git",
     "react": "~0.11.1"
   },

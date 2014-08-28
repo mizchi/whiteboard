@@ -1457,11 +1457,12 @@ module.exports = window.Whiteboard = (function() {
         return preview.hide();
       };
     })(this));
-    return whiteboard.on('show-preview', (function(_this) {
+    whiteboard.on('show-preview', (function(_this) {
       return function(svg) {
         return preview.show();
       };
     })(this));
+    return whiteboard;
   };
 
   return Whiteboard;
