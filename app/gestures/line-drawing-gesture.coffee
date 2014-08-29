@@ -8,7 +8,10 @@ getPathPositions = ($group) ->
   $group.selectAll('path').forEach ($path) =>
     segments = Snap.parsePathString($path.attr 'd')
     ps = segementsToPoints segments
-    points.push (ps.map ([x, y]) -> [x, y, $path])...
+    points.push _.first(ps).concat $path
+    points.push _.last(ps).concat $path
+    # points.push (ps.map ([x, y]) -> [x, y, $path])...
+  console.log 'points', points
   points
 
 # Point * Point[] -> (Int Int Shape Int)?
@@ -56,14 +59,27 @@ class LineDrawingGesture extends Gesture
     mode = '' # head tail isolate
 
     pathArray = null
+    fromShape = null
+
+    points = null
 
     @paper.drag (dx, dy, x, y, event) =>
+
+      segs = null
       [ex, ey] = [dx+sx, dy+sy]
       if p = getNearPoint([ex, ey], @nearPoints)
         [ex, ey] = p
 
-      segs = pointsToSegments [[sx, sy], [ex, ey]]
-      # segs = pathArray.concat [ex, ey]
+      if mode is 'isolate'
+        segs = pointsToSegments [[sx, sy], [ex, ey]]
+      else if mode is 'tail'
+        fromShape?.remove()
+        fromShape = null
+        segs = pointsToSegments points.concat([[ex, ey]])
+      else if mode is 'head'
+        fromShape?.remove()
+        fromShape = null
+        segs = pointsToSegments [[ex, ey]].concat points
 
       @lastShape?.remove()
       @lastShape = @currentLayer().path
@@ -72,12 +88,21 @@ class LineDrawingGesture extends Gesture
         stroke: @wb.strokeColor
         fill: @wb.fillColor
         strokeWidth: 1
+
     , (x, y, event) =>
       sx = event.offsetX
       sy = event.offsetY
       if p = getNearPoint([sx, sy], @nearPoints)
-        mode = 'head'
-        [sx, sy] = p
+        [sx, sy, fromShape] = p
+        segs = Snap.parsePathString(fromShape.attr('d'))
+        points = segementsToPoints(segs)
+        [last_x, last_y] = _.last(points)
+        # console.log last_x, last_y, sx, sy
+
+        if last_x is sx and last_y is sy
+          mode = 'tail'
+        else
+          mode = 'head'
       else
         mode = 'isolate'
     , =>

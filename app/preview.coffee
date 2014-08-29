@@ -1,7 +1,7 @@
 module.exports =
 class Preview
   ReactView = React.createClass
-    getInitialState: -> value: '<svg class="main" width=640 height=320 style="background-color:white;"></svg>'
+    getInitialState: -> value: '<svg class="main" width=640 height=320></svg>'
     render: ->
       React.DOM.div {
         className: 'content'

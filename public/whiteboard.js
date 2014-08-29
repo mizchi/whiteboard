@@ -701,13 +701,11 @@ getPathPositions = function($group) {
       var ps, segments;
       segments = Snap.parsePathString($path.attr('d'));
       ps = segementsToPoints(segments);
-      return points.push.apply(points, ps.map(function(_arg) {
-        var x, y;
-        x = _arg[0], y = _arg[1];
-        return [x, y, $path];
-      }));
+      points.push(_.first(ps).concat($path));
+      return points.push(_.last(ps).concat($path));
     };
   })(this));
+  console.log('points', points);
   return points;
 };
 
@@ -774,7 +772,7 @@ module.exports = LineDrawingGesture = (function(_super) {
   };
 
   function LineDrawingGesture() {
-    var ex, ey, mode, pathArray, sx, sy;
+    var ex, ey, fromShape, mode, pathArray, points, sx, sy;
     LineDrawingGesture.__super__.constructor.apply(this, arguments);
     this.nearPoints = getPathPositions(this.currentLayer());
     sx = null;
@@ -783,14 +781,31 @@ module.exports = LineDrawingGesture = (function(_super) {
     ey = null;
     mode = '';
     pathArray = null;
+    fromShape = null;
+    points = null;
     this.paper.drag((function(_this) {
       return function(dx, dy, x, y, event) {
         var p, segs, _ref1, _ref2;
+        segs = null;
         _ref1 = [dx + sx, dy + sy], ex = _ref1[0], ey = _ref1[1];
         if (p = getNearPoint([ex, ey], _this.nearPoints)) {
           ex = p[0], ey = p[1];
         }
-        segs = pointsToSegments([[sx, sy], [ex, ey]]);
+        if (mode === 'isolate') {
+          segs = pointsToSegments([[sx, sy], [ex, ey]]);
+        } else if (mode === 'tail') {
+          if (fromShape != null) {
+            fromShape.remove();
+          }
+          fromShape = null;
+          segs = pointsToSegments(points.concat([[ex, ey]]));
+        } else if (mode === 'head') {
+          if (fromShape != null) {
+            fromShape.remove();
+          }
+          fromShape = null;
+          segs = pointsToSegments([[ex, ey]].concat(points));
+        }
         if ((_ref2 = _this.lastShape) != null) {
           _ref2.remove();
         }
@@ -804,12 +819,19 @@ module.exports = LineDrawingGesture = (function(_super) {
       };
     })(this), (function(_this) {
       return function(x, y, event) {
-        var p;
+        var last_x, last_y, p, segs, _ref1;
         sx = event.offsetX;
         sy = event.offsetY;
         if (p = getNearPoint([sx, sy], _this.nearPoints)) {
-          mode = 'head';
-          return sx = p[0], sy = p[1], p;
+          sx = p[0], sy = p[1], fromShape = p[2];
+          segs = Snap.parsePathString(fromShape.attr('d'));
+          points = segementsToPoints(segs);
+          _ref1 = _.last(points), last_x = _ref1[0], last_y = _ref1[1];
+          if (last_x === sx && last_y === sy) {
+            return mode = 'tail';
+          } else {
+            return mode = 'head';
+          }
         } else {
           return mode = 'isolate';
         }
@@ -946,7 +968,7 @@ module.exports = Preview = (function() {
   ReactView = React.createClass({
     getInitialState: function() {
       return {
-        value: '<svg class="main" width=640 height=320 style="background-color:white;"></svg>'
+        value: '<svg class="main" width=640 height=320></svg>'
       };
     },
     render: function() {
