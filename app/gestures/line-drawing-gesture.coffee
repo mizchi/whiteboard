@@ -64,7 +64,6 @@ class LineDrawingGesture extends Gesture
     points = null
 
     @paper.drag (dx, dy, x, y, event) =>
-
       segs = null
       [ex, ey] = [dx+sx, dy+sy]
       if p = getNearPoint([ex, ey], @nearPoints)
@@ -84,9 +83,9 @@ class LineDrawingGesture extends Gesture
       @lastShape?.remove()
       @lastShape = @currentLayer().path
         path: segs
-        fill: "none"
         stroke: @wb.strokeColor
         fill: @wb.fillColor
+        # fill: "red"
         strokeWidth: 1
 
     , (x, y, event) =>
@@ -97,8 +96,6 @@ class LineDrawingGesture extends Gesture
         segs = Snap.parsePathString(fromShape.attr('d'))
         points = segementsToPoints(segs)
         [last_x, last_y] = _.last(points)
-        # console.log last_x, last_y, sx, sy
-
         if last_x is sx and last_y is sy
           mode = 'tail'
         else

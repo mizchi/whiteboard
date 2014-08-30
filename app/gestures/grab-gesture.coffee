@@ -11,6 +11,7 @@ class GrabGesture extends Gesture
     points = segementsToPoints path
 
     @paper.mousedown (ev) => @wb.clearUI()
+
     $path.click =>
       @_$points = $points = points.map ([sx, sy], index) =>
         $circle = @wb.ui.circle sx, sy, 5
@@ -35,30 +36,25 @@ class GrabGesture extends Gesture
 
         $circle
 
-  # setLineClick: ($line) ->
-  #   $line.click =>
-  #     @_$points = $points = points.map ([sx, sy], index) =>
-  #       $circle = @wb.ui.circle sx, sy, 5
-  #       $circle.attr fill: 'transparent', stroke: 'black' #, strokeDasharray:"1,2,1"
-  #       lx = sx
-  #       ly = sy
-  #       $circle.drag (dx, dy) =>
-  #         rx = lx + dx
-  #         ry = ly + dy
-  #         points[index] = [rx, ry]
-  #         segs = pointsToSegments points
-  #         $path.attr('d', segs)
-  #         $circle.attr cx: rx, cy: ry
-  #         false
-  #       , (x, y, ev) ->
-  #         [lx, ly] = points[index]
-  #         ev.stopPropagation()
-  #         false
-  #       , (ev) =>
-  #         ev.stopPropagation()
-  #         @wb.update()
-  #
-  #       $circle
+    segs = null
+    [type, lx, ly] = []
+
+    $path.drag (dx, dy) =>
+      rx = lx + dx
+      ry = ly + dy
+      segs[0] = ['M', rx, ry]
+      $path.attr('d', segs)
+    , (dx, dy, ev) =>
+      segs = Snap.parsePathString($path.attr('d'))
+      [type, lx, ly] = segs[0]
+      @wb.clearUI()
+      ev.stopPropagation()
+      false
+    , (ev) =>
+      console.log 'path end drag'
+      ev.stopPropagation()
+      @wb.update()
+
 
   focus: ($shape) ->
     switch $shape.type

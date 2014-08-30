@@ -347,7 +347,7 @@ module.exports = GrabGesture = (function(_super) {
   __extends(GrabGesture, _super);
 
   GrabGesture.prototype.setPathClick = function($path) {
-    var path, points;
+    var lx, ly, path, points, segs, type, _ref1;
     path = Snap.parsePathString($path.attr('d'));
     points = segementsToPoints(path);
     this.paper.mousedown((function(_this) {
@@ -355,7 +355,7 @@ module.exports = GrabGesture = (function(_super) {
         return _this.wb.clearUI();
       };
     })(this));
-    return $path.click((function(_this) {
+    $path.click((function(_this) {
       return function() {
         var $points;
         return _this._$points = $points = points.map(function(_arg, index) {
@@ -391,6 +391,32 @@ module.exports = GrabGesture = (function(_super) {
           });
           return $circle;
         });
+      };
+    })(this));
+    segs = null;
+    _ref1 = [], type = _ref1[0], lx = _ref1[1], ly = _ref1[2];
+    return $path.drag((function(_this) {
+      return function(dx, dy) {
+        var rx, ry;
+        rx = lx + dx;
+        ry = ly + dy;
+        segs[0] = ['M', rx, ry];
+        return $path.attr('d', segs);
+      };
+    })(this), (function(_this) {
+      return function(dx, dy, ev) {
+        var _ref2;
+        segs = Snap.parsePathString($path.attr('d'));
+        _ref2 = segs[0], type = _ref2[0], lx = _ref2[1], ly = _ref2[2];
+        _this.wb.clearUI();
+        ev.stopPropagation();
+        return false;
+      };
+    })(this), (function(_this) {
+      return function(ev) {
+        console.log('path end drag');
+        ev.stopPropagation();
+        return _this.wb.update();
       };
     })(this));
   };
@@ -811,7 +837,6 @@ module.exports = LineDrawingGesture = (function(_super) {
         }
         return _this.lastShape = _this.currentLayer().path({
           path: segs,
-          fill: "none",
           stroke: _this.wb.strokeColor,
           fill: _this.wb.fillColor,
           strokeWidth: 1
@@ -1090,9 +1115,9 @@ var adjustToNearPoint, getAnchorPoints, int, pointsToSegments, segementsToPoints
 int = parseInt;
 
 pointsToSegments = function(_arg) {
-  var body, sx, sy, _ref;
+  var body, ex, ey, segs, sx, sy, _ref, _ref1;
   (_ref = _arg[0], sx = _ref[0], sy = _ref[1]), body = 2 <= _arg.length ? __slice.call(_arg, 1) : [];
-  return [].concat([['M', sx, sy]], body.map((function(_this) {
+  segs = [].concat([['M', sx, sy]], body.map((function(_this) {
     return function() {
       var lx, ly;
       lx = sx;
@@ -1108,6 +1133,11 @@ pointsToSegments = function(_arg) {
       };
     };
   })(this)()));
+  _ref1 = _.last(body), ex = _ref1[0], ey = _ref1[1];
+  if (sx === ex && sy === ey) {
+    segs[segs.length - 1] = ['Z'];
+  }
+  return segs;
 };
 
 segementsToPoints = function(_arg) {
@@ -1121,6 +1151,9 @@ segementsToPoints = function(_arg) {
       return function(_arg1) {
         var t, x, y;
         t = _arg1[0], x = _arg1[1], y = _arg1[2];
+        if (t === 'Z') {
+          return [sx, sy];
+        }
         cx += x;
         cy += y;
         return [cx, cy];

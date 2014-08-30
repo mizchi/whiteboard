@@ -1,7 +1,7 @@
 int = parseInt
 
 pointsToSegments = ([[sx, sy], body...]) ->
-  [].concat [['M', sx, sy]], body.map do =>
+  segs = [].concat [['M', sx, sy]], body.map do =>
     lx = sx
     ly = sy
     ([x, y]) ->
@@ -11,11 +11,19 @@ pointsToSegments = ([[sx, sy], body...]) ->
       ly = y
       ['l', dx, dy]
 
+  [ex, ey] = _.last body
+  if sx is ex and sy is ey
+    segs[segs.length-1] = ['Z']
+  segs
+
+
+
 segementsToPoints = ([[t, sx, sy], body...]) ->
   [].concat [[sx, sy]], body.map do =>
     cx = sx
     cy = sy
     ([t, x, y]) ->
+      if t is 'Z' then return [sx, sy]
       cx += x
       cy += y
       [cx, cy]
