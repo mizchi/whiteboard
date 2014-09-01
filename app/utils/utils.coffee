@@ -1,5 +1,6 @@
 int = parseInt
 
+# Point[] -> Snap.Segment[]
 pointsToSegments = ([[sx, sy], body...]) ->
   segs = [].concat [['M', sx, sy]], body.map do =>
     lx = sx
@@ -16,8 +17,7 @@ pointsToSegments = ([[sx, sy], body...]) ->
     segs[segs.length-1] = ['Z']
   segs
 
-
-
+# Snap.Segment[] -> Point[]
 segementsToPoints = ([[t, sx, sy], body...]) ->
   [].concat [[sx, sy]], body.map do =>
     cx = sx
@@ -28,7 +28,12 @@ segementsToPoints = ([[t, sx, sy], body...]) ->
       cy += y
       [cx, cy]
 
-# Int * Int[] * Int? -> { adjusted :: Bool, n :: Int }
+# Snap.Path -> Point[]
+pathToPoints = ($path) ->
+  segments = Snap.parsePathString $path.attr('d')
+  segementsToPoints segments
+
+# Point * Point[] * Int? -> Point
 adjustToNearPoint = (n, points, force = 3) ->
   for p in points when p - force < n < p + force
     return p
@@ -51,4 +56,4 @@ getAnchorPoints = (layer) ->
         anchor_y.push y, y+h
   {xs: anchor_x, ys: anchor_y}
 
-module.exports = {pointsToSegments, segementsToPoints, getAnchorPoints, adjustToNearPoint}
+module.exports = {pointsToSegments, segementsToPoints, getAnchorPoints, adjustToNearPoint, pathToPoints}

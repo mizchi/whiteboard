@@ -162,7 +162,7 @@ module.exports = Gesture = (function() {
 })();
 
 
-},{"../../utils/event-emitter":12,"../../utils/extend":13}],3:[function(require,module,exports){
+},{"../../utils/event-emitter":14,"../../utils/extend":15}],3:[function(require,module,exports){
 var CircleDrawingGesture, DragGesture,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -331,369 +331,52 @@ module.exports = FreeDrawingGesture = (function(_super) {
 })(DragGesture);
 
 
-},{"../utils/utils":14,"./base/drag-gesture":1,"./base/gesture":2}],6:[function(require,module,exports){
-var Gesture, GrabGesture, adjustToNearPoint, int, pointsToSegments, segementsToPoints, _ref,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+},{"../utils/utils":16,"./base/drag-gesture":1,"./base/gesture":2}],6:[function(require,module,exports){
+var Gesture, GrabGesture, PathOperation, RectOperation, adjustToNearPoint, pathToPoints, pointsToSegments, segementsToPoints, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Gesture = require('./base/gesture');
 
-_ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints, adjustToNearPoint = _ref.adjustToNearPoint;
+RectOperation = require('../operations/rect');
 
-int = parseInt;
+PathOperation = require('../operations/path');
+
+_ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints, adjustToNearPoint = _ref.adjustToNearPoint, pathToPoints = _ref.pathToPoints;
 
 module.exports = GrabGesture = (function(_super) {
   __extends(GrabGesture, _super);
 
-  GrabGesture.prototype.setPathClick = function($path) {
-    var lx, ly, path, points, segs, type, _ref1;
-    path = Snap.parsePathString($path.attr('d'));
-    points = segementsToPoints(path);
-    this.paper.mousedown((function(_this) {
-      return function(ev) {
-        return _this.wb.clearUI();
-      };
-    })(this));
-    $path.click((function(_this) {
-      return function() {
-        var $points;
-        return _this._$points = $points = points.map(function(_arg, index) {
-          var $circle, lx, ly, sx, sy;
-          sx = _arg[0], sy = _arg[1];
-          $circle = _this.wb.ui.circle(sx, sy, 5);
-          $circle.attr({
-            fill: 'transparent',
-            stroke: 'black'
-          });
-          lx = sx;
-          ly = sy;
-          $circle.drag(function(dx, dy) {
-            var rx, ry, segs;
-            rx = lx + dx;
-            ry = ly + dy;
-            points[index] = [rx, ry];
-            segs = pointsToSegments(points);
-            $path.attr('d', segs);
-            $circle.attr({
-              cx: rx,
-              cy: ry
-            });
-            return false;
-          }, function(x, y, ev) {
-            var _ref1;
-            _ref1 = points[index], lx = _ref1[0], ly = _ref1[1];
-            ev.stopPropagation();
-            return false;
-          }, function(ev) {
-            ev.stopPropagation();
-            return _this.wb.update();
-          });
-          return $circle;
-        });
-      };
-    })(this));
-    segs = null;
-    _ref1 = [], type = _ref1[0], lx = _ref1[1], ly = _ref1[2];
-    return $path.drag((function(_this) {
-      return function(dx, dy) {
-        var rx, ry;
-        rx = lx + dx;
-        ry = ly + dy;
-        segs[0] = ['M', rx, ry];
-        return $path.attr('d', segs);
-      };
-    })(this), (function(_this) {
-      return function(dx, dy, ev) {
-        var _ref2;
-        segs = Snap.parsePathString($path.attr('d'));
-        _ref2 = segs[0], type = _ref2[0], lx = _ref2[1], ly = _ref2[2];
-        _this.wb.clearUI();
-        ev.stopPropagation();
-        return false;
-      };
-    })(this), (function(_this) {
-      return function(ev) {
-        console.log('path end drag');
-        ev.stopPropagation();
-        return _this.wb.update();
-      };
-    })(this));
-  };
-
-  GrabGesture.prototype.focus = function($shape) {
-    switch ($shape.type) {
+  GrabGesture.prototype.getOperationByType = function(type) {
+    switch (type) {
+      case 'path':
+        return PathOperation;
       case 'rect':
-        return this.focusToRect($shape);
+        return RectOperation;
     }
   };
 
-  GrabGesture.prototype.focusToRect = function($rect) {
-    var $leftBottom, $leftTop, $rightBottom, $rightTop, adjust, h, lh, lw, lx, ly, padding, resetAnchorsPosition, w, x, xs, y, ys, _ref1;
-    x = int($rect.attr('x'));
-    y = int($rect.attr('y'));
-    w = int($rect.attr('width'));
-    h = int($rect.attr('height'));
-    $leftTop = this.wb.ui.circle();
-    $rightTop = this.wb.ui.circle();
-    $rightBottom = this.wb.ui.circle();
-    $leftBottom = this.wb.ui.circle();
-    resetAnchorsPosition = function(x, y, w, h, r) {
-      if (r == null) {
-        r = 5;
-      }
-      $leftTop.attr({
-        cx: x,
-        cy: y,
-        r: r
-      });
-      $rightTop.attr({
-        cx: x + w,
-        cy: y,
-        r: r
-      });
-      $rightBottom.attr({
-        cx: x + w,
-        cy: y + h,
-        r: r
-      });
-      return $leftBottom.attr({
-        cx: x,
-        cy: y + h,
-        r: r
-      });
-    };
-    resetAnchorsPosition(x, y, w, h);
-    _ref1 = [x, y, w, h, [], []], lx = _ref1[0], ly = _ref1[1], lw = _ref1[2], lh = _ref1[3], xs = _ref1[4], ys = _ref1[5];
-    padding = 5;
-    adjust = function(p, size, points, force) {
-      var a;
-      if (force == null) {
-        force = 10;
-      }
-      if (a = adjustToNearPoint(p, points, force)) {
-        return [a, size + p - ax];
-      } else {
-        return [p, size];
-      }
-    };
-    return [
-      {
-        shape: $leftTop,
-        x: function(dx, dy, x, y, w, h) {
-          return x + dx;
-        },
-        y: function(dx, dy, x, y, w, h) {
-          return y + dy;
-        },
-        w: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, w - dx);
-        },
-        h: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, h - dy);
-        },
-        adjust: function(x, y, w, h) {
-          var ax, ay, dx, dy;
-          if (ax = adjustToNearPoint(x, xs, 10)) {
-            dx = x - ax;
-            x = ax;
-            w += dx;
-          }
-          if (ay = adjustToNearPoint(y, ys, 10)) {
-            dy = y - ay;
-            y = ay;
-            h += dy;
-          }
-          return [x, y, w, h];
-        }
-      }, {
-        shape: $rightTop,
-        x: function(dx, dy, x, y, w, h) {
-          return x;
-        },
-        y: function(dx, dy, x, y, w, h) {
-          return y + dy;
-        },
-        w: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, w + dx);
-        },
-        h: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, h - dy);
-        },
-        adjust: function(x, y, w, h) {
-          var ax, ay, dy, gx;
-          gx = x + w;
-          if (ax = adjustToNearPoint(gx, xs, 10)) {
-            x = x;
-            w = ax - x;
-          }
-          if (ay = adjustToNearPoint(y, ys, 10)) {
-            dy = y - ay;
-            y = ay;
-            h += dy;
-          }
-          return [x, y, w, h];
-        }
-      }, {
-        shape: $rightBottom,
-        x: function(dx, dy, x, y, w, h) {
-          return x;
-        },
-        y: function(dx, dy, x, y, w, h) {
-          return y;
-        },
-        w: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, w + dx);
-        },
-        h: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, h + dy);
-        },
-        adjust: function(x, y, w, h) {
-          var ax, ay, gx, gy;
-          gx = x + w;
-          if (ax = adjustToNearPoint(gx, xs, 10)) {
-            x = x;
-            w = ax - x;
-          }
-          gy = y + h;
-          if (ay = adjustToNearPoint(gy, ys, 10)) {
-            y = y;
-            h = ay - y;
-          }
-          return [x, y, w, h];
-        }
-      }, {
-        shape: $leftBottom,
-        x: function(dx, dy, x, y, w, h) {
-          return x + dx;
-        },
-        y: function(dx, dy, x, y, w, h) {
-          return y;
-        },
-        w: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, w - dx);
-        },
-        h: function(dx, dy, x, y, w, h) {
-          return Math.max(padding, h + dy);
-        },
-        adjust: function(x, y, w, h) {
-          var ax, ay, dx, gy;
-          if (ax = adjustToNearPoint(x, xs, 10)) {
-            dx = x - ax;
-            x = ax;
-            w += dx;
-          }
-          gy = y + h;
-          if (ay = adjustToNearPoint(gy, ys, 10)) {
-            y = y;
-            h = ay - y;
-          }
-          return [x, y, w, h];
-        }
-      }
-    ].forEach((function(_this) {
-      return function(anc) {
-        return anc.shape.drag(function(dx, dy) {
-          var args, rh, rw, rx, ry, _ref2;
-          args = [dx, dy, lx, ly, lw, lh];
-          rx = anc.x.apply(anc, args);
-          ry = anc.y.apply(anc, args);
-          rw = anc.w.apply(anc, args);
-          rh = anc.h.apply(anc, args);
-          _ref2 = anc.adjust(rx, ry, rw, rh), rx = _ref2[0], ry = _ref2[1], rw = _ref2[2], rh = _ref2[3];
-          $rect.attr({
-            x: rx,
-            y: ry,
-            width: rw,
-            height: rh
-          });
-          return resetAnchorsPosition(rx, ry, rw, rh);
-        }, function(x, y, ev) {
-          var _ref2;
-          ev.stopPropagation();
-          lx = int($leftTop.attr('cx'));
-          ly = int($leftTop.attr('cy'));
-          lw = int($rect.attr('width'));
-          lh = int($rect.attr('height'));
-          _ref2 = _this.wb.getAnchorPoints(), xs = _ref2.xs, ys = _ref2.ys;
-          return _this.wb.showGrid();
-        }, function() {
-          _this.wb.clearUI();
-          return _this.wb.update();
-        });
-      };
-    })(this));
-  };
-
-  GrabGesture.prototype.setRectClick = function($rect) {
-    var lx, ly;
-    this.paper.mousedown((function(_this) {
-      return function(ev) {
-        return _this.wb.clearUI();
-      };
-    })(this));
-    lx = int($rect.attr('x'));
-    ly = int($rect.attr('y'));
-    $rect.drag((function(_this) {
-      return function(dx, dy) {
-        var rx, ry;
-        rx = lx + dx;
-        ry = ly + dy;
-        return $rect.attr({
-          x: rx,
-          y: ry
-        });
-      };
-    })(this), (function(_this) {
-      return function(dx, dy, ev) {
-        _this.wb.clearUI();
-        lx = int($rect.attr('x'));
-        ly = int($rect.attr('y'));
-        ev.stopPropagation();
-        return false;
-      };
-    })(this), (function(_this) {
-      return function(ev) {
-        ev.stopPropagation();
-        return _this.wb.update();
-      };
-    })(this));
-    return $rect.click((function(_this) {
-      return function() {
-        return _this.focus($rect);
-      };
-    })(this));
-  };
-
   function GrabGesture() {
-    this.onDragEnd = __bind(this.onDragEnd, this);
-    this.onDrag = __bind(this.onDrag, this);
-    this.onTouch = __bind(this.onTouch, this);
     GrabGesture.__super__.constructor.apply(this, arguments);
+    this.disposers = [];
     this.$shapes = this.currentLayer().selectAll('*');
     this.$shapes.forEach((function(_this) {
       return function($shape) {
-        switch ($shape.type) {
-          case 'path':
-            return _this.setPathClick($shape);
-          case 'rect':
-            return _this.setRectClick($shape);
-          default:
-            return console.log($shape.type);
-        }
+        var Operation;
+        Operation = _this.getOperationByType($shape.type);
+        return _this.disposers.push(Operation.watch($shape, _this.wb));
       };
     })(this));
   }
 
-  GrabGesture.prototype.onTouch = function(ev) {};
-
-  GrabGesture.prototype.onDrag = function(ev) {};
-
-  GrabGesture.prototype.onDragEnd = function(ev) {
-    return this.wb.update();
+  GrabGesture.prototype.focus = function($shape) {
+    return this.getOperationByType($shape.type).focus($shape, this.wb);
   };
 
   GrabGesture.prototype.dispose = function() {
+    if (typeof this.disposeFocus === "function") {
+      this.disposeFocus();
+    }
     this.$shapes.forEach((function(_this) {
       return function($path) {
         $path.unclick();
@@ -708,7 +391,7 @@ module.exports = GrabGesture = (function(_super) {
 })(Gesture);
 
 
-},{"../utils/utils":14,"./base/gesture":2}],7:[function(require,module,exports){
+},{"../operations/path":10,"../operations/rect":11,"../utils/utils":16,"./base/gesture":2}],7:[function(require,module,exports){
 var DragGesture, Gesture, LineDrawingGesture, getNearPoint, getPathPositions, pointsToSegments, segementsToPoints, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -875,7 +558,7 @@ module.exports = LineDrawingGesture = (function(_super) {
 })(Gesture);
 
 
-},{"../utils/utils":14,"./base/drag-gesture":1,"./base/gesture":2}],8:[function(require,module,exports){
+},{"../utils/utils":16,"./base/drag-gesture":1,"./base/gesture":2}],8:[function(require,module,exports){
 var DragGesture, RectDrawingGesture,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -985,6 +668,362 @@ module.exports = HistoryManager = (function() {
 
 
 },{}],10:[function(require,module,exports){
+var adjustToNearPoint, focus, pathToPoints, pointsToSegments, segementsToPoints, watch, _ref;
+
+_ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints, adjustToNearPoint = _ref.adjustToNearPoint, pathToPoints = _ref.pathToPoints;
+
+focus = function($path, wb) {
+  var points;
+  points = pathToPoints($path);
+  return points.forEach((function(_this) {
+    return function(_arg, index) {
+      var $circle, lx, ly, sx, sy;
+      sx = _arg[0], sy = _arg[1];
+      $circle = wb.ui.circle(sx, sy, 5);
+      $circle.attr({
+        fill: 'transparent',
+        stroke: 'black'
+      });
+      lx = sx;
+      ly = sy;
+      $circle.drag(function(dx, dy) {
+        var rx, ry, segs;
+        rx = lx + dx;
+        ry = ly + dy;
+        points[index] = [rx, ry];
+        segs = pointsToSegments(points);
+        $path.attr('d', segs);
+        $circle.attr({
+          cx: rx,
+          cy: ry
+        });
+        return false;
+      }, function(x, y, ev) {
+        var _ref1;
+        _ref1 = points[index], lx = _ref1[0], ly = _ref1[1];
+        ev.stopPropagation();
+        return false;
+      }, function(ev) {
+        ev.stopPropagation();
+        return wb.update();
+      });
+      return $circle;
+    };
+  })(this));
+};
+
+watch = function($path, wb) {
+  var disposeFocus, lx, ly, points, segs, _ref1, _type;
+  points = pathToPoints($path);
+  wb.paper.mousedown((function(_this) {
+    return function(ev) {
+      return wb.clearUI();
+    };
+  })(this));
+  disposeFocus = null;
+  $path.click((function(_this) {
+    return function() {
+      wb.clearUI();
+      if (typeof disposeFocus === "function") {
+        disposeFocus();
+      }
+      return disposeFocus = focus($path, wb);
+    };
+  })(this));
+  segs = null;
+  _ref1 = [], _type = _ref1[0], lx = _ref1[1], ly = _ref1[2];
+  $path.drag((function(_this) {
+    return function(dx, dy) {
+      var rx, ry;
+      rx = lx + dx;
+      ry = ly + dy;
+      segs[0] = ['M', rx, ry];
+      return $path.attr('d', segs);
+    };
+  })(this), (function(_this) {
+    return function(dx, dy, ev) {
+      var _ref2;
+      segs = Snap.parsePathString($path.attr('d'));
+      _ref2 = segs[0], _type = _ref2[0], lx = _ref2[1], ly = _ref2[2];
+      wb.clearUI();
+      ev.stopPropagation();
+      return false;
+    };
+  })(this), (function(_this) {
+    return function(ev) {
+      points = segementsToPoints(segs);
+      ev.stopPropagation();
+      return wb.update();
+    };
+  })(this));
+  return function() {
+    wb.paper.unmousedown();
+    if (typeof disposeFocus === "function") {
+      disposeFocus();
+    }
+    $shape.undrag();
+    return $shape.unclick();
+  };
+};
+
+module.exports = {
+  watch: watch,
+  focus: focus
+};
+
+
+},{"../utils/utils":16}],11:[function(require,module,exports){
+var adjustToNearPoint, focus, int, pathToPoints, pointsToSegments, segementsToPoints, watch, _ref;
+
+_ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints, adjustToNearPoint = _ref.adjustToNearPoint, pathToPoints = _ref.pathToPoints;
+
+int = parseInt;
+
+focus = function($shape, wb) {
+  var $leftBottom, $leftTop, $rightBottom, $rightTop, h, lh, lw, lx, ly, padding, resetAnchorsPosition, w, x, xs, y, ys, _ref1;
+  x = int($shape.attr('x'));
+  y = int($shape.attr('y'));
+  w = int($shape.attr('width'));
+  h = int($shape.attr('height'));
+  $leftTop = wb.ui.circle();
+  $rightTop = wb.ui.circle();
+  $rightBottom = wb.ui.circle();
+  $leftBottom = wb.ui.circle();
+  resetAnchorsPosition = function(x, y, w, h, r) {
+    if (r == null) {
+      r = 5;
+    }
+    $leftTop.attr({
+      cx: x,
+      cy: y,
+      r: r
+    });
+    $rightTop.attr({
+      cx: x + w,
+      cy: y,
+      r: r
+    });
+    $rightBottom.attr({
+      cx: x + w,
+      cy: y + h,
+      r: r
+    });
+    return $leftBottom.attr({
+      cx: x,
+      cy: y + h,
+      r: r
+    });
+  };
+  resetAnchorsPosition(x, y, w, h);
+  _ref1 = [x, y, w, h, [], []], lx = _ref1[0], ly = _ref1[1], lw = _ref1[2], lh = _ref1[3], xs = _ref1[4], ys = _ref1[5];
+  padding = 5;
+  return [
+    {
+      shape: $leftTop,
+      x: function(dx, dy, x, y, w, h) {
+        return x + dx;
+      },
+      y: function(dx, dy, x, y, w, h) {
+        return y + dy;
+      },
+      w: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, w - dx);
+      },
+      h: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, h - dy);
+      },
+      adjust: function(x, y, w, h) {
+        var ax, ay, dx, dy;
+        if (ax = adjustToNearPoint(x, xs, 10)) {
+          dx = x - ax;
+          x = ax;
+          w += dx;
+        }
+        if (ay = adjustToNearPoint(y, ys, 10)) {
+          dy = y - ay;
+          y = ay;
+          h += dy;
+        }
+        return [x, y, w, h];
+      }
+    }, {
+      shape: $rightTop,
+      x: function(dx, dy, x, y, w, h) {
+        return x;
+      },
+      y: function(dx, dy, x, y, w, h) {
+        return y + dy;
+      },
+      w: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, w + dx);
+      },
+      h: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, h - dy);
+      },
+      adjust: function(x, y, w, h) {
+        var ax, ay, dy, gx;
+        gx = x + w;
+        if (ax = adjustToNearPoint(gx, xs, 10)) {
+          x = x;
+          w = ax - x;
+        }
+        if (ay = adjustToNearPoint(y, ys, 10)) {
+          dy = y - ay;
+          y = ay;
+          h += dy;
+        }
+        return [x, y, w, h];
+      }
+    }, {
+      shape: $rightBottom,
+      x: function(dx, dy, x, y, w, h) {
+        return x;
+      },
+      y: function(dx, dy, x, y, w, h) {
+        return y;
+      },
+      w: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, w + dx);
+      },
+      h: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, h + dy);
+      },
+      adjust: function(x, y, w, h) {
+        var ax, ay, gx, gy;
+        gx = x + w;
+        if (ax = adjustToNearPoint(gx, xs, 10)) {
+          x = x;
+          w = ax - x;
+        }
+        gy = y + h;
+        if (ay = adjustToNearPoint(gy, ys, 10)) {
+          y = y;
+          h = ay - y;
+        }
+        return [x, y, w, h];
+      }
+    }, {
+      shape: $leftBottom,
+      x: function(dx, dy, x, y, w, h) {
+        return x + dx;
+      },
+      y: function(dx, dy, x, y, w, h) {
+        return y;
+      },
+      w: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, w - dx);
+      },
+      h: function(dx, dy, x, y, w, h) {
+        return Math.max(padding, h + dy);
+      },
+      adjust: function(x, y, w, h) {
+        var ax, ay, dx, gy;
+        if (ax = adjustToNearPoint(x, xs, 10)) {
+          dx = x - ax;
+          x = ax;
+          w += dx;
+        }
+        gy = y + h;
+        if (ay = adjustToNearPoint(gy, ys, 10)) {
+          y = y;
+          h = ay - y;
+        }
+        return [x, y, w, h];
+      }
+    }
+  ].forEach((function(_this) {
+    return function(anc) {
+      return anc.shape.drag(function(dx, dy) {
+        var args, rh, rw, rx, ry, _ref2;
+        args = [dx, dy, lx, ly, lw, lh];
+        rx = anc.x.apply(anc, args);
+        ry = anc.y.apply(anc, args);
+        rw = anc.w.apply(anc, args);
+        rh = anc.h.apply(anc, args);
+        _ref2 = anc.adjust(rx, ry, rw, rh), rx = _ref2[0], ry = _ref2[1], rw = _ref2[2], rh = _ref2[3];
+        $shape.attr({
+          x: rx,
+          y: ry,
+          width: rw,
+          height: rh
+        });
+        return resetAnchorsPosition(rx, ry, rw, rh);
+      }, function(x, y, ev) {
+        var _ref2;
+        ev.stopPropagation();
+        lx = int($leftTop.attr('cx'));
+        ly = int($leftTop.attr('cy'));
+        lw = int($shape.attr('width'));
+        lh = int($shape.attr('height'));
+        _ref2 = wb.getAnchorPoints(), xs = _ref2.xs, ys = _ref2.ys;
+        return wb.showGrid();
+      }, function() {
+        wb.clearUI();
+        return wb.update();
+      });
+    };
+  })(this));
+};
+
+watch = function($shape, wb) {
+  var disposeFocus, lx, ly;
+  wb.paper.mousedown((function(_this) {
+    return function(ev) {
+      return wb.clearUI();
+    };
+  })(this));
+  disposeFocus = null;
+  $shape.click((function(_this) {
+    return function() {
+      if (typeof disposeFocus === "function") {
+        disposeFocus();
+      }
+      return disposeFocus = focus($shape, wb);
+    };
+  })(this));
+  lx = int($shape.attr('x'));
+  ly = int($shape.attr('y'));
+  $shape.drag((function(_this) {
+    return function(dx, dy) {
+      var rx, ry;
+      rx = lx + dx;
+      ry = ly + dy;
+      return $shape.attr({
+        x: rx,
+        y: ry
+      });
+    };
+  })(this), (function(_this) {
+    return function(dx, dy, ev) {
+      wb.clearUI();
+      lx = int($shape.attr('x'));
+      ly = int($shape.attr('y'));
+      ev.stopPropagation();
+      return false;
+    };
+  })(this), (function(_this) {
+    return function(ev) {
+      ev.stopPropagation();
+      return wb.update();
+    };
+  })(this));
+  return function() {
+    wb.paper.unmousedown();
+    if (typeof disposeFocus === "function") {
+      disposeFocus();
+    }
+    $shape.undrag();
+    return $shape.unclick();
+  };
+};
+
+module.exports = {
+  watch: watch,
+  focus: focus
+};
+
+
+},{"../utils/utils":16}],12:[function(require,module,exports){
 var Preview;
 
 module.exports = Preview = (function() {
@@ -1022,7 +1061,7 @@ module.exports = Preview = (function() {
 })();
 
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var jade = require("jade/runtime");
 
 module.exports = function template(locals) {
@@ -1030,9 +1069,9 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div><button class=\"edit-grab\">grab</button><button class=\"edit-clear\">clear</button><button class=\"edit-free\">drawing</button><button class=\"edit-rect\">rect</button><button class=\"edit-circle\">circle</button><button class=\"edit-line\">line</button><button class=\"edit-eraser\">eraser</button>/<button class=\"undo\">undo</button><button class=\"redo\">redo</button><span class=\"mode\"></span>&nbsp;<span class=\"mouse-x\"></span><span class=\"mouse-y\"></span></div><div style=\"position:relative; width:640px; height:320px; padding:0 margin: 0;\" class=\"main\"><div style=\"position:absolute;padding:0; margin: 0; width:100%; height: 100%; overflow: scroll; -webkit-user-select: none;\" class=\"bg\"></div><svg width=\"640\" height=\"320\" style=\"position:absolute;padding:0 margin: 0;cursor: crosshair\" class=\"whiteboard\"></svg></div><div><button class=\"layer0\">1</button><button class=\"layer1\">2</button><button class=\"layer2\">3</button></div><div><span>tolelance:</span><span class=\"tolelance-value\">2</span><button class=\"tolelance-plus\">+</button><button class=\"tolelance-minus\">-</button><span>stroke</span><input value=\"black\" class=\"stroke-color\"/><span>fill</span><input value=\"transparent\" class=\"fill-color\"/></div><div class=\"preview\"></div>");;return buf.join("");
+buf.push("<div><button class=\"edit-grab\">grab</button><button class=\"edit-free\">drawing</button><button class=\"edit-rect\">rect</button><button class=\"edit-circle\">circle</button><button class=\"edit-line\">line</button><button class=\"edit-eraser\">eraser</button>/<button class=\"undo\">undo</button><button class=\"redo\">redo</button><span class=\"mode\"></span>&nbsp;<span class=\"mouse-x\"></span>:<span class=\"mouse-y\"></span></div><div style=\"position:relative; width:640px; height:320px; padding:0 margin: 0;\" class=\"main\"><div style=\"position:absolute;padding:0; margin: 0; width:100%; height: 100%; overflow: scroll; -webkit-user-select: none;\" class=\"bg\"></div><svg width=\"640\" height=\"320\" style=\"position:absolute;padding:0 margin: 0;cursor: crosshair\" class=\"whiteboard\"></svg></div><div><button class=\"layer0\">1</button><button class=\"layer1\">2</button><button class=\"layer2\">3</button></div>");;return buf.join("");
 };
-},{"jade/runtime":16}],12:[function(require,module,exports){
+},{"jade/runtime":18}],14:[function(require,module,exports){
 var EventEmitter,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
@@ -1093,7 +1132,7 @@ module.exports = EventEmitter = (function() {
 })();
 
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var extend;
 
 module.exports = extend = (function(_this) {
@@ -1108,8 +1147,8 @@ module.exports = extend = (function(_this) {
 })(this);
 
 
-},{}],14:[function(require,module,exports){
-var adjustToNearPoint, getAnchorPoints, int, pointsToSegments, segementsToPoints,
+},{}],16:[function(require,module,exports){
+var adjustToNearPoint, getAnchorPoints, int, pathToPoints, pointsToSegments, segementsToPoints,
   __slice = [].slice;
 
 int = parseInt;
@@ -1162,6 +1201,12 @@ segementsToPoints = function(_arg) {
   })(this)()));
 };
 
+pathToPoints = function($path) {
+  var segments;
+  segments = Snap.parsePathString($path.attr('d'));
+  return segementsToPoints(segments);
+};
+
 adjustToNearPoint = function(n, points, force) {
   var p, _i, _len;
   if (force == null) {
@@ -1205,11 +1250,12 @@ module.exports = {
   pointsToSegments: pointsToSegments,
   segementsToPoints: segementsToPoints,
   getAnchorPoints: getAnchorPoints,
-  adjustToNearPoint: adjustToNearPoint
+  adjustToNearPoint: adjustToNearPoint,
+  pathToPoints: pathToPoints
 };
 
 
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var CircleDrawingGesture, EraserGesture, EventEmitter, FreeDrawingGesture, GrabGesture, HistoryManager, LineDrawingGesture, Preview, RectDrawingGesture, Whiteboard, extend, getAnchorPoints, int,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -1325,6 +1371,7 @@ module.exports = window.Whiteboard = (function() {
       _ref.dispose();
     }
     this.mode = mode;
+    this.clearUI();
     this.$svg.off();
     Gesture = (function() {
       switch (mode) {
@@ -1367,7 +1414,7 @@ module.exports = window.Whiteboard = (function() {
   };
 
   function Whiteboard(selector, _arg) {
-    var $fillColor, $strokeColor, $svg, $tolelance, el, fillColor, offsetX, offsetY, paper, preview, strokeColor, svg, _ref;
+    var $fillColor, $strokeColor, $svg, el, fillColor, offsetX, offsetY, paper, preview, strokeColor, svg, _ref;
     preview = (_arg != null ? _arg : {}).preview;
     this.setMode = __bind(this.setMode, this);
     this.setSVG = __bind(this.setSVG, this);
@@ -1388,19 +1435,6 @@ module.exports = window.Whiteboard = (function() {
     this.offsetX = offsetX;
     this.offsetY = offsetY;
     this.tolelance = 2;
-    $tolelance = $('.tolelance-value');
-    this.$('.tolelance-plus').on('click', (function(_this) {
-      return function() {
-        _this.tolelance++;
-        return $tolelance.text(_this.tolelance);
-      };
-    })(this));
-    this.$('.tolelance-minus').on('click', (function(_this) {
-      return function() {
-        _this.tolelance--;
-        return $tolelance.text(_this.tolelance);
-      };
-    })(this));
     this.$('.edit-free').on('click', (function(_this) {
       return function() {
         return _this.setMode('free');
@@ -1479,14 +1513,12 @@ module.exports = window.Whiteboard = (function() {
   }
 
   Whiteboard.start = function(selector) {
-    var hist, preview, whiteboard;
+    var hist, whiteboard;
     whiteboard = new Whiteboard(selector);
-    preview = new Preview('.preview');
     hist = new HistoryManager;
     whiteboard.on('changed', (function(_this) {
       return function(svg) {
-        hist.pushHistory(svg);
-        return preview.update(hist.current());
+        return hist.pushHistory(svg);
       };
     })(this));
     whiteboard.on('undo', (function(_this) {
@@ -1494,7 +1526,6 @@ module.exports = window.Whiteboard = (function() {
         var next;
         hist.undo();
         next = hist.current();
-        preview.update(next);
         return whiteboard.setSVG(next);
       };
     })(this));
@@ -1503,7 +1534,6 @@ module.exports = window.Whiteboard = (function() {
         var next;
         hist.redo();
         next = hist.current();
-        preview.update(next);
         return whiteboard.setSVG(next);
       };
     })(this));
@@ -1525,7 +1555,7 @@ module.exports = window.Whiteboard = (function() {
 })();
 
 
-},{"./gestures/circle-drawing-gesture":3,"./gestures/eraser-gesture":4,"./gestures/free-drawing-gesture":5,"./gestures/grab-gesture":6,"./gestures/line-drawing-gesture":7,"./gestures/rect-drawing-gesture":8,"./history-manager":9,"./preview":10,"./templates/whiteboard":11,"./utils/event-emitter":12,"./utils/extend":13,"./utils/utils":14,"./whiteboard":15}],16:[function(require,module,exports){
+},{"./gestures/circle-drawing-gesture":3,"./gestures/eraser-gesture":4,"./gestures/free-drawing-gesture":5,"./gestures/grab-gesture":6,"./gestures/line-drawing-gesture":7,"./gestures/rect-drawing-gesture":8,"./history-manager":9,"./preview":12,"./templates/whiteboard":13,"./utils/event-emitter":14,"./utils/extend":15,"./utils/utils":16,"./whiteboard":17}],18:[function(require,module,exports){
 (function (global){
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.jade=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
@@ -1738,4 +1768,4 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
 (1)
 });
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[15])
+},{}]},{},[17])

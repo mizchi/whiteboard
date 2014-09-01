@@ -67,6 +67,7 @@ class window.Whiteboard
     @_gesture?.dispose()
 
     @mode = mode
+    @clearUI()
     @$svg.off()
     Gesture = switch mode
       when 'free'   then FreeDrawingGesture
@@ -108,25 +109,12 @@ class window.Whiteboard
     @offsetY = offsetY
 
     @tolelance = 2
-    $tolelance = $('.tolelance-value')
-    @$('.tolelance-plus').on 'click', =>
-      @tolelance++
-      $tolelance.text @tolelance
-
-    @$('.tolelance-minus').on 'click', =>
-      @tolelance--
-      $tolelance.text @tolelance
 
     @$('.edit-free').on   'click', => @setMode 'free'
     @$('.edit-rect').on   'click', => @setMode 'rect'
     @$('.edit-line').on   'click', => @setMode 'line'
     @$('.edit-circle').on 'click', => @setMode 'circle'
-    @$('.edit-eraser').on 'click', =>
-      @setMode 'eraser'
-      # $svg.on 'mousemove', '*', (event) =>
-      #   return unless @eraser
-      #   $(event.target).remove()
-      #   @update()
+    @$('.edit-eraser').on 'click', => @setMode 'eraser'
 
     @$('.edit-grab').on 'click', =>
       $svg.off()
@@ -140,7 +128,6 @@ class window.Whiteboard
       @strokeColor = $strokeColor.val()
 
     @$('.undo').on 'click', => @trigger 'undo'
-
     @$('.redo').on 'click', => @trigger 'redo'
 
     @$('.layer0').on 'click', => @setLayer(0); @showBackground()
@@ -155,27 +142,36 @@ class window.Whiteboard
     @setLayer(0)
     @setMode 'line'
 
+    # $tolelance = $('.tolelance-value')
+    # @$('.tolelance-plus').on 'click', =>
+    #   @tolelance++
+    #   $tolelance.text @tolelance
+    #
+    # @$('.tolelance-minus').on 'click', =>
+    #   @tolelance--
+    #   $tolelance.text @tolelance
+
+
   @start: (selector) ->
     whiteboard = new Whiteboard(selector)
-    preview = new Preview '.preview'
+    # preview = new Preview '.preview'
     hist = new HistoryManager
 
     whiteboard.on 'changed', (svg) =>
       hist.pushHistory svg
-      preview.update hist.current()
+      # preview.update hist.current()
 
     whiteboard.on 'undo', (svg) =>
       hist.undo()
       next = hist.current()
-
-      preview.update next
+      # preview.update next
       whiteboard.setSVG next
 
     whiteboard.on 'redo', (svg) =>
       hist.redo()
       next = hist.current()
 
-      preview.update next
+      # preview.update next
       whiteboard.setSVG next
 
     whiteboard.on 'hide-preview', (svg) =>
