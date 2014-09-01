@@ -1,6 +1,7 @@
 Gesture = require './base/gesture'
 RectOperation = require '../operations/rect'
 PathOperation = require '../operations/path'
+CircleOperation = require '../operations/circle'
 
 {pointsToSegments, segementsToPoints, adjustToNearPoint, pathToPoints} = require '../utils/utils'
 
@@ -19,6 +20,7 @@ class GrabGesture extends Gesture
     switch type
       when 'path' then PathOperation
       when 'rect' then RectOperation
+      when 'circle' then CircleOperation
 
   focus: ($shape) ->
     @getOperationByType($shape.type).focus($shape, @wb)

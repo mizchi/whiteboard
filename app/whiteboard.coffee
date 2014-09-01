@@ -32,6 +32,16 @@ class window.Whiteboard
   setSVG: (text) =>
     @$svg.html text
 
+  setBackgroundHTML: (html) =>
+    $bg = @$('.bg')
+    $bg.html html
+    w = $bg.width()
+    h = $bg.height()
+    console.log w, h
+    @$svg.css
+      width: Math.max w, 640
+      height: Math.max h, 480
+
   getUI: ->
     @ui = @paper.g()
 
@@ -142,7 +152,7 @@ class window.Whiteboard
     @resetLayers()
 
     @setLayer(0)
-    @setMode 'grab'
+    @setMode 'free'
     # $tolelance = $('.tolelance-value')
     # @$('.tolelance-plus').on 'click', =>
     #   @tolelance++
