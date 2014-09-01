@@ -32,7 +32,12 @@ class window.Whiteboard
   setSVG: (text) =>
     @$svg.html text
 
+  getUI: ->
+    @ui = @paper.g()
+
   setLayer: (n) ->
+    @clearUI()
+
     for l in @layers
       l.node.style.visibility = 'hidden'
     @layer = @layers[n]
@@ -133,15 +138,11 @@ class window.Whiteboard
     @$('.layer0').on 'click', => @setLayer(0); @showBackground()
     @$('.layer1').on 'click', => @setLayer(1); @hideBackground()
     @$('.layer2').on 'click', => @setLayer(2); @hideBackground()
-    @layers = [
-      @paper.g()
-      @paper.g()
-      @paper.g()
-    ]
-    @ui = @paper.g()
-    @setLayer(0)
-    @setMode 'line'
 
+    @resetLayers()
+
+    @setLayer(0)
+    @setMode 'grab'
     # $tolelance = $('.tolelance-value')
     # @$('.tolelance-plus').on 'click', =>
     #   @tolelance++
@@ -151,6 +152,24 @@ class window.Whiteboard
     #   @tolelance--
     #   $tolelance.text @tolelance
 
+
+  # TODO: flexisible layer creation
+  resetLayers: (layerCount) ->
+    unless @_layerInitialized
+      @_layerInitialized = true
+      @layers = [
+        @paper.g().addClass 'l0'
+        @paper.g().addClass 'l1'
+        @paper.g().addClass 'l2'
+      ]
+      @ui = @paper.g().addClass 'ui'
+    else
+      @layers = [
+        Snap.select('.l0')
+        Snap.select('.l1')
+        Snap.select('.l2')
+      ]
+      @ui = Snap.select('.ui')
 
   @start: (selector) ->
     whiteboard = new Whiteboard(selector)
@@ -162,17 +181,20 @@ class window.Whiteboard
       # preview.update hist.current()
 
     whiteboard.on 'undo', (svg) =>
+      console.log 'undo'
       hist.undo()
       next = hist.current()
       # preview.update next
       whiteboard.setSVG next
+      whiteboard.setMode whiteboard.mode
 
     whiteboard.on 'redo', (svg) =>
+      console.log 'redo'
       hist.redo()
       next = hist.current()
-
       # preview.update next
       whiteboard.setSVG next
+      whiteboard.setMode whiteboard.mode
 
     whiteboard.on 'hide-preview', (svg) =>
       preview.hide()

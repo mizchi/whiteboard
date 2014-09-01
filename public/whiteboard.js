@@ -347,6 +347,22 @@ _ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, sege
 module.exports = GrabGesture = (function(_super) {
   __extends(GrabGesture, _super);
 
+  function GrabGesture() {
+    GrabGesture.__super__.constructor.apply(this, arguments);
+    this.disposers = [];
+    this.$shapes = this.currentLayer().selectAll('*');
+    this.$shapes.forEach((function(_this) {
+      return function($shape) {
+        var Operation;
+        Operation = _this.getOperationByType($shape.type);
+        if (!Operation) {
+          return;
+        }
+        return _this.disposers.push(Operation.watch($shape, _this.wb));
+      };
+    })(this));
+  }
+
   GrabGesture.prototype.getOperationByType = function(type) {
     switch (type) {
       case 'path':
@@ -356,24 +372,12 @@ module.exports = GrabGesture = (function(_super) {
     }
   };
 
-  function GrabGesture() {
-    GrabGesture.__super__.constructor.apply(this, arguments);
-    this.disposers = [];
-    this.$shapes = this.currentLayer().selectAll('*');
-    this.$shapes.forEach((function(_this) {
-      return function($shape) {
-        var Operation;
-        Operation = _this.getOperationByType($shape.type);
-        return _this.disposers.push(Operation.watch($shape, _this.wb));
-      };
-    })(this));
-  }
-
   GrabGesture.prototype.focus = function($shape) {
     return this.getOperationByType($shape.type).focus($shape, this.wb);
   };
 
   GrabGesture.prototype.dispose = function() {
+    var d, _results;
     if (typeof this.disposeFocus === "function") {
       this.disposeFocus();
     }
@@ -383,7 +387,14 @@ module.exports = GrabGesture = (function(_super) {
         return $path.undrag();
       };
     })(this));
-    return this.wb.clearUI();
+    this.wb.clearUI();
+    this.wb.paper.undrag();
+    this.wb.paper.unclick();
+    _results = [];
+    while (d = this.disposers.shift()) {
+      _results.push(d());
+    }
+    return _results;
   };
 
   return GrabGesture;
@@ -392,7 +403,7 @@ module.exports = GrabGesture = (function(_super) {
 
 
 },{"../operations/path":10,"../operations/rect":11,"../utils/utils":16,"./base/gesture":2}],7:[function(require,module,exports){
-var DragGesture, Gesture, LineDrawingGesture, getNearPoint, getPathPositions, pointsToSegments, segementsToPoints, _ref,
+var DragGesture, Gesture, LineDrawingGesture, getNearPoint, getPathPositions, pointsToSegments, segementsToPoints, showAnchorsToShape, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -447,36 +458,37 @@ getNearPoint = function(_arg, points, force) {
   }
 };
 
+showAnchorsToShape = function(shape, wb) {
+  var points, segs;
+  segs = Snap.parsePathString(shape.attr('d'));
+  points = segementsToPoints(segs);
+  return points.map((function(_this) {
+    return function(_arg) {
+      var $circle, x, y;
+      x = _arg[0], y = _arg[1];
+      $circle = wb.ui.circle({
+        cx: x,
+        cy: y,
+        r: 8,
+        fill: 'transparent',
+        stroke: 'blue',
+        opacity: 0.86
+      });
+      $circle.mousemove(function() {
+        return $circle.attr('stroke', 'red');
+      });
+      return $circle.mouseout(function() {
+        return $circle.attr('stroke', 'blue');
+      });
+    };
+  })(this));
+};
+
 module.exports = LineDrawingGesture = (function(_super) {
   __extends(LineDrawingGesture, _super);
 
   LineDrawingGesture.prototype.dispose = function() {
     return this.paper.undrag();
-  };
-
-  LineDrawingGesture.prototype.showAnchorsToShape = function(shape) {
-    var points, segs;
-    segs = Snap.parsePathString(shape.attr('d'));
-    points = segementsToPoints(segs);
-    return points.map((function(_this) {
-      return function(_arg) {
-        var $circle, x, y;
-        x = _arg[0], y = _arg[1];
-        $circle = _this.wb.ui.circle({
-          cx: x,
-          cy: y,
-          r: 8,
-          fill: 'transparent',
-          stroke: 'black'
-        });
-        $circle.mousemove(function() {
-          return $circle.attr('stroke', 'red');
-        });
-        return $circle.mouseout(function() {
-          return $circle.attr('stroke', 'black');
-        });
-      };
-    })(this));
   };
 
   function LineDrawingGesture() {
@@ -494,6 +506,7 @@ module.exports = LineDrawingGesture = (function(_super) {
     this.paper.drag((function(_this) {
       return function(dx, dy, x, y, event) {
         var p, segs, _ref1, _ref2;
+        console.log('line draging', dx, dy, x, y);
         segs = null;
         _ref1 = [dx + sx, dy + sy], ex = _ref1[0], ey = _ref1[1];
         if (p = getNearPoint([ex, ey], _this.nearPoints)) {
@@ -527,7 +540,7 @@ module.exports = LineDrawingGesture = (function(_super) {
     })(this), (function(_this) {
       return function(x, y, event) {
         var last_x, last_y, p, segs, _ref1;
-        console.log(x, y);
+        console.log('line drag start', x, y);
         sx = event.offsetX;
         sy = event.offsetY;
         if (p = getNearPoint([sx, sy], _this.nearPoints)) {
@@ -547,7 +560,7 @@ module.exports = LineDrawingGesture = (function(_super) {
     })(this), (function(_this) {
       return function() {
         _this.nearPoints = getPathPositions(_this.currentLayer());
-        _this.showAnchorsToShape(_this.lastShape);
+        showAnchorsToShape(_this.lastShape, _this.wb);
         return _this.lastShape = null;
       };
     })(this));
@@ -673,16 +686,18 @@ var adjustToNearPoint, focus, pathToPoints, pointsToSegments, segementsToPoints,
 _ref = require('../utils/utils'), pointsToSegments = _ref.pointsToSegments, segementsToPoints = _ref.segementsToPoints, adjustToNearPoint = _ref.adjustToNearPoint, pathToPoints = _ref.pathToPoints;
 
 focus = function($path, wb) {
-  var points;
+  var $points, points;
   points = pathToPoints($path);
-  return points.forEach((function(_this) {
+  $points = points.map((function(_this) {
     return function(_arg, index) {
       var $circle, lx, ly, sx, sy;
       sx = _arg[0], sy = _arg[1];
-      $circle = wb.ui.circle(sx, sy, 5);
-      $circle.attr({
+      $circle = wb.ui.circle({
+        cx: sx,
+        cy: sy,
         fill: 'transparent',
-        stroke: 'black'
+        stroke: 'blue',
+        r: 6
       });
       lx = sx;
       ly = sy;
@@ -710,6 +725,16 @@ focus = function($path, wb) {
       return $circle;
     };
   })(this));
+  return function() {
+    var $p, _i, _len, _results;
+    wb.paper.unmousedown();
+    _results = [];
+    for (_i = 0, _len = $points.length; _i < _len; _i++) {
+      $p = $points[_i];
+      _results.push($p.remove());
+    }
+    return _results;
+  };
 };
 
 watch = function($path, wb) {
@@ -761,8 +786,8 @@ watch = function($path, wb) {
     if (typeof disposeFocus === "function") {
       disposeFocus();
     }
-    $shape.undrag();
-    return $shape.unclick();
+    $path.undrag();
+    return $path.unclick();
   };
 };
 
@@ -785,33 +810,46 @@ focus = function($shape, wb) {
   y = int($shape.attr('y'));
   w = int($shape.attr('width'));
   h = int($shape.attr('height'));
-  $leftTop = wb.ui.circle();
-  $rightTop = wb.ui.circle();
-  $rightBottom = wb.ui.circle();
-  $leftBottom = wb.ui.circle();
-  resetAnchorsPosition = function(x, y, w, h, r) {
-    if (r == null) {
-      r = 5;
-    }
+  $leftTop = wb.ui.circle({
+    fill: 'transparent',
+    stroke: 'blue',
+    opacity: 0.86,
+    r: 8
+  });
+  $rightTop = wb.ui.circle({
+    fill: 'transparent',
+    stroke: 'blue',
+    opacity: 0.86,
+    r: 8
+  });
+  $rightBottom = wb.ui.circle({
+    fill: 'transparent',
+    stroke: 'blue',
+    opacity: 0.86,
+    r: 8
+  });
+  $leftBottom = wb.ui.circle({
+    fill: 'transparent',
+    stroke: 'blue',
+    opacity: 0.86,
+    r: 8
+  });
+  resetAnchorsPosition = function(x, y, w, h) {
     $leftTop.attr({
       cx: x,
-      cy: y,
-      r: r
+      cy: y
     });
     $rightTop.attr({
       cx: x + w,
-      cy: y,
-      r: r
+      cy: y
     });
     $rightBottom.attr({
       cx: x + w,
-      cy: y + h,
-      r: r
+      cy: y + h
     });
     return $leftBottom.attr({
       cx: x,
-      cy: y + h,
-      r: r
+      cy: y + h
     });
   };
   resetAnchorsPosition(x, y, w, h);
@@ -1308,8 +1346,13 @@ module.exports = window.Whiteboard = (function() {
     return this.$svg.html(text);
   };
 
+  Whiteboard.prototype.getUI = function() {
+    return this.ui = this.paper.g();
+  };
+
   Whiteboard.prototype.setLayer = function(n) {
     var l, _i, _len, _ref;
+    this.clearUI();
     _ref = this.layers;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       l = _ref[_i];
@@ -1506,11 +1549,21 @@ module.exports = window.Whiteboard = (function() {
         return _this.hideBackground();
       };
     })(this));
-    this.layers = [this.paper.g(), this.paper.g(), this.paper.g()];
-    this.ui = this.paper.g();
+    this.resetLayers();
     this.setLayer(0);
-    this.setMode('line');
+    this.setMode('grab');
   }
+
+  Whiteboard.prototype.resetLayers = function(layerCount) {
+    if (!this._layerInitialized) {
+      this._layerInitialized = true;
+      this.layers = [this.paper.g().addClass('l0'), this.paper.g().addClass('l1'), this.paper.g().addClass('l2')];
+      return this.ui = this.paper.g().addClass('ui');
+    } else {
+      this.layers = [Snap.select('.l0'), Snap.select('.l1'), Snap.select('.l2')];
+      return this.ui = Snap.select('.ui');
+    }
+  };
 
   Whiteboard.start = function(selector) {
     var hist, whiteboard;
@@ -1524,17 +1577,21 @@ module.exports = window.Whiteboard = (function() {
     whiteboard.on('undo', (function(_this) {
       return function(svg) {
         var next;
+        console.log('undo');
         hist.undo();
         next = hist.current();
-        return whiteboard.setSVG(next);
+        whiteboard.setSVG(next);
+        return whiteboard.setMode(whiteboard.mode);
       };
     })(this));
     whiteboard.on('redo', (function(_this) {
       return function(svg) {
         var next;
+        console.log('redo');
         hist.redo();
         next = hist.current();
-        return whiteboard.setSVG(next);
+        whiteboard.setSVG(next);
+        return whiteboard.setMode(whiteboard.mode);
       };
     })(this));
     whiteboard.on('hide-preview', (function(_this) {

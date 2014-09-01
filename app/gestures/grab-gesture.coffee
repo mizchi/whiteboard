@@ -6,18 +6,19 @@ PathOperation = require '../operations/path'
 
 module.exports =
 class GrabGesture extends Gesture
-  getOperationByType: (type) ->
-    switch type
-      when 'path' then PathOperation
-      when 'rect' then RectOperation
-
   constructor: ->
     super
     @disposers = []
     @$shapes = @currentLayer().selectAll('*')
     @$shapes.forEach ($shape) =>
       Operation = @getOperationByType($shape.type)
+      return unless Operation # TODO: Avoid unknown shape
       @disposers.push Operation.watch $shape, @wb
+
+  getOperationByType: (type) ->
+    switch type
+      when 'path' then PathOperation
+      when 'rect' then RectOperation
 
   focus: ($shape) ->
     @getOperationByType($shape.type).focus($shape, @wb)
@@ -28,3 +29,7 @@ class GrabGesture extends Gesture
       $path.unclick()
       $path.undrag()
     @wb.clearUI()
+    @wb.paper.undrag()
+    @wb.paper.unclick()
+    while d = @disposers.shift()
+      d()

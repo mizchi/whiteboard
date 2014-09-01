@@ -2,9 +2,13 @@
 
 focus = ($path, wb) ->
   points = pathToPoints $path
-  points.forEach ([sx, sy], index) =>
-    $circle = wb.ui.circle sx, sy, 5
-    $circle.attr fill: 'transparent', stroke: 'black' #, strokeDasharray:"1,2,1"
+  $points = points.map ([sx, sy], index) =>
+    $circle = wb.ui.circle
+      cx: sx
+      cy: sy
+      fill: 'transparent'
+      stroke: 'blue'
+      r: 6
     lx = sx
     ly = sy
 
@@ -24,6 +28,10 @@ focus = ($path, wb) ->
       ev.stopPropagation()
       wb.update()
     $circle
+  ->
+    wb.paper.unmousedown()
+    for $p in $points
+      $p.remove()
 
 watch = ($path, wb) ->
   points = pathToPoints $path
@@ -57,7 +65,7 @@ watch = ($path, wb) ->
   return ->
     wb.paper.unmousedown()
     disposeFocus?()
-    $shape.undrag()
-    $shape.unclick()
+    $path.undrag()
+    $path.unclick()
 
 module.exports = {watch, focus}

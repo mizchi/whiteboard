@@ -8,16 +8,16 @@ focus = ($shape, wb) ->
   w = int $shape.attr('width')
   h = int $shape.attr('height')
 
-  $leftTop     = wb.ui.circle()
-  $rightTop    = wb.ui.circle()
-  $rightBottom = wb.ui.circle()
-  $leftBottom  = wb.ui.circle()
+  $leftTop     = wb.ui.circle fill: 'transparent', stroke: 'blue', opacity: 0.86, r: 8
+  $rightTop    = wb.ui.circle fill: 'transparent', stroke: 'blue', opacity: 0.86, r: 8
+  $rightBottom = wb.ui.circle fill: 'transparent', stroke: 'blue', opacity: 0.86, r: 8
+  $leftBottom  = wb.ui.circle fill: 'transparent', stroke: 'blue', opacity: 0.86, r: 8
 
-  resetAnchorsPosition = (x, y, w, h, r = 5) ->
-    $leftTop    .attr cx: x,   cy: y,   r: r
-    $rightTop   .attr cx: x+w, cy: y,   r: r
-    $rightBottom.attr cx: x+w, cy: y+h, r: r
-    $leftBottom .attr cx: x,   cy: y+h, r: r
+  resetAnchorsPosition = (x, y, w, h) ->
+    $leftTop    .attr cx: x,   cy: y
+    $rightTop   .attr cx: x+w, cy: y
+    $rightBottom.attr cx: x+w, cy: y+h
+    $leftBottom .attr cx: x,   cy: y+h
 
   resetAnchorsPosition x, y, w, h
 

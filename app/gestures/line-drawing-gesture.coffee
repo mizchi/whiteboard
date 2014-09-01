@@ -34,18 +34,18 @@ getNearPoint = ([sx, sy], points, force = 10) ->
   else
     null
 
+showAnchorsToShape = (shape, wb) ->
+  segs = Snap.parsePathString(shape.attr('d'))
+  points = segementsToPoints(segs)
+  points.map ([x, y]) =>
+    $circle = wb.ui.circle cx: x, cy: y, r: 8, fill: 'transparent', stroke: 'blue', opacity: 0.86
+    $circle.mousemove => $circle.attr 'stroke', 'red'
+    $circle.mouseout => $circle.attr 'stroke', 'blue'
+
 module.exports =
 class LineDrawingGesture extends Gesture
   dispose: ->
     @paper.undrag()
-
-  showAnchorsToShape: (shape) ->
-    segs = Snap.parsePathString(shape.attr('d'))
-    points = segementsToPoints(segs)
-    points.map ([x, y]) =>
-      $circle = @wb.ui.circle cx: x, cy: y, r: 8, fill: 'transparent', stroke: 'black'
-      $circle.mousemove => $circle.attr 'stroke', 'red'
-      $circle.mouseout => $circle.attr 'stroke', 'black'
 
   constructor: ->
     super
@@ -64,6 +64,7 @@ class LineDrawingGesture extends Gesture
     points = null
 
     @paper.drag (dx, dy, x, y, event) =>
+      console.log 'line draging', dx, dy, x, y
       segs = null
       [ex, ey] = [dx+sx, dy+sy]
       if p = getNearPoint([ex, ey], @nearPoints)
@@ -88,7 +89,7 @@ class LineDrawingGesture extends Gesture
         strokeWidth: 1
 
     , (x, y, event) =>
-      console.log x, y
+      console.log 'line drag start', x, y
       sx = event.offsetX
       sy = event.offsetY
       if p = getNearPoint([sx, sy], @nearPoints)
@@ -104,5 +105,5 @@ class LineDrawingGesture extends Gesture
         mode = 'isolate'
     , =>
       @nearPoints = getPathPositions @currentLayer()
-      @showAnchorsToShape @lastShape
+      showAnchorsToShape @lastShape, @wb
       @lastShape = null
