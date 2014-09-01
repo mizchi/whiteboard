@@ -2,7 +2,7 @@ DragGesture = require './base/drag-gesture'
 Gesture = require './base/gesture'
 {pointsToSegments, segementsToPoints} = require '../utils/utils'
 
-# Layer -> (Int Int Path)[]
+# Layer -> (x:Int y:Int Path)[]
 getPathPositions = ($group) ->
   points = []
   $group.selectAll('path').forEach ($path) =>
@@ -11,10 +11,10 @@ getPathPositions = ($group) ->
     points.push _.first(ps).concat $path
     points.push _.last(ps).concat $path
     # points.push (ps.map ([x, y]) -> [x, y, $path])...
-  console.log 'points', points
   points
 
-# Point * Point[] -> (Int Int Shape Int)?
+# base:Point * canditates:Point[] -> (index:Int cost:Int Shape Int)?
+# Find most near point from canditates
 getNearPoint = ([sx, sy], points, force = 10) ->
   return null if points.length is 0
 
@@ -56,7 +56,7 @@ class LineDrawingGesture extends Gesture
     ex = null
     ey = null
 
-    mode = '' # head tail isolate
+    mode = '' # head/tail/isolate
 
     pathArray = null
     fromShape = null
@@ -85,10 +85,10 @@ class LineDrawingGesture extends Gesture
         path: segs
         stroke: @wb.strokeColor
         fill: @wb.fillColor
-        # fill: "red"
         strokeWidth: 1
 
     , (x, y, event) =>
+      console.log x, y
       sx = event.offsetX
       sy = event.offsetY
       if p = getNearPoint([sx, sy], @nearPoints)

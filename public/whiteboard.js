@@ -414,7 +414,6 @@ getPathPositions = function($group) {
       return points.push(_.last(ps).concat($path));
     };
   })(this));
-  console.log('points', points);
   return points;
 };
 
@@ -528,6 +527,7 @@ module.exports = LineDrawingGesture = (function(_super) {
     })(this), (function(_this) {
       return function(x, y, event) {
         var last_x, last_y, p, segs, _ref1;
+        console.log(x, y);
         sx = event.offsetX;
         sy = event.offsetY;
         if (p = getNearPoint([sx, sy], _this.nearPoints)) {
