@@ -47,10 +47,261 @@
     <pre><code class='coffeescript'>parseInt</code></pre>
     
   </dd>
+  <dt id='module.exports-variable'>
+    module.exports
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>{
+  pointsToSegments: pointsToSegments,
+  segementsToPoints: segementsToPoints,
+  getAnchorPoints: getAnchorPoints,
+  adjustToNearPoint: adjustToNearPoint,
+  pathToPoints: pathToPoints
+}</code></pre>
+    
+  </dd>
 </dl>
+      <h2>Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#pointsToSegments-'>
+        ~
+(Array&lt;Segment&gt;)
+<b>pointsToSegments</b><span>(points)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Point[] -&gt; Segment[] 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#segementsToPoints-'>
+        ~
+(Array&lt;Point&gt;)
+<b>segementsToPoints</b><span>(segments)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Segment[] -&gt; Point[] 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#pathToPoints-'>
+        ~
+(Array&lt;Point&gt;)
+<b>pathToPoints</b><span>($path)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Snap.Path -&gt; Point[] 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#adjustToNearPoint-'>
+        ~
+(number)
+<b>adjustToNearPoint</b><span>(n, points, force = 3)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Point <em> Point[] </em> Int? -&gt; Point @option [number] force adjust power(default=3)
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getAnchorPoints-'>
+        ~
+(Array&lt;number&gt;)
+<b>getAnchorPoints</b><span>(layer)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Snap.Group -&gt; {xs :: Int[], ys :: Int[]} 
+    </span>
+  </li>
+</ul>
+      <h2>Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='pointsToSegments-'>
+      ~
+(Array&lt;Segment&gt;)
+<b>pointsToSegments</b><span>(points)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Point[] -&gt; Segment[]</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>points</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;Point&gt;</tt>
+        )
+      </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>Array&lt;Segment&gt;</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='segementsToPoints-'>
+      ~
+(Array&lt;Point&gt;)
+<b>segementsToPoints</b><span>(segments)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Segment[] -&gt; Point[]</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>segments</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;Segment&gt;</tt>
+        )
+      </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>Array&lt;Point&gt;</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='pathToPoints-'>
+      ~
+(Array&lt;Point&gt;)
+<b>pathToPoints</b><span>($path)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Snap.Path -&gt; Point[]</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>$path</span>
+      <span class='type'>
+        (
+          <tt>Snap.Path</tt>
+        )
+      </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>Array&lt;Point&gt;</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='adjustToNearPoint-'>
+      ~
+(number)
+<b>adjustToNearPoint</b><span>(n, points, force = 3)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Point <em> Point[] </em> Int? -&gt; Point
+@option [number] force adjust power(default=3)</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>n</span>
+      <span class='type'>
+        (
+          <tt>number</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>base value </span>
+    </li>
+    <li>
+      <span class='name'>points</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;number&gt;</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>canditates </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>number</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getAnchorPoints-'>
+      ~
+(Array&lt;number&gt;)
+<b>getAnchorPoints</b><span>(layer)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Snap.Group -&gt; {xs :: Int[], ys :: Int[]}</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>layer</span>
+      <span class='type'>
+        (
+          <tt>Snap.Group</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>target Snap.Group </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>Array&lt;number&gt;</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
     </div>
     <div id='footer'>
-  September 05, 14 17:58:11 by
+  September 05, 14 18:26:38 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

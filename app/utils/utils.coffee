@@ -1,7 +1,10 @@
 int = parseInt
 
-# Point[] -> Snap.Segment[]
-pointsToSegments = ([[sx, sy], body...]) ->
+# Point[] -> Segment[]
+# @param [Array<Point>] points
+# @return [Array<Segment>]
+pointsToSegments = (points) ->
+  [[sx, sy], body...] = points
   segs = [].concat [['M', sx, sy]], body.map do =>
     lx = sx
     ly = sy
@@ -17,8 +20,11 @@ pointsToSegments = ([[sx, sy], body...]) ->
     segs[segs.length-1] = ['Z']
   segs
 
-# Snap.Segment[] -> Point[]
-segementsToPoints = ([[t, sx, sy], body...]) ->
+# Segment[] -> Point[]
+# @param [Array<Segment>] segments
+# @return [Array<Point>]
+segementsToPoints = (segments) ->
+  [[t, sx, sy], body...] = segments
   [].concat [[sx, sy]], body.map do =>
     cx = sx
     cy = sy
@@ -29,17 +35,25 @@ segementsToPoints = ([[t, sx, sy], body...]) ->
       [cx, cy]
 
 # Snap.Path -> Point[]
+# @param [Snap.Path] $path
+# @return [Array<Point>]
 pathToPoints = ($path) ->
   segments = Snap.parsePathString $path.attr('d')
   segementsToPoints segments
 
 # Point * Point[] * Int? -> Point
+# @param [number] n base value
+# @param [Array<number>] points canditates
+# @option [number] force adjust power(default=3)
+# @return [number]
 adjustToNearPoint = (n, points, force = 3) ->
   for p in points when p - force < n < p + force
     return p
   null
 
 # Snap.Group -> {xs :: Int[], ys :: Int[]}
+# @param [Snap.Group] layer target Snap.Group
+# @return [Array<number>]
 getAnchorPoints = (layer) ->
   anchor_x = []
   anchor_y = []
