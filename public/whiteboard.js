@@ -1395,12 +1395,154 @@ HistoryManager = require('./history-manager');
 
 Preview = require('./preview');
 
-module.exports = window.Whiteboard = (function() {
+module.exports = Whiteboard = (function() {
   var template;
+
+  Whiteboard.start = function(selector) {
+    var hist, whiteboard;
+    whiteboard = new Whiteboard(selector);
+    hist = new HistoryManager;
+    whiteboard.on('changed', (function(_this) {
+      return function(svg) {
+        return hist.pushHistory(svg);
+      };
+    })(this));
+    whiteboard.on('undo', (function(_this) {
+      return function(svg) {
+        var next;
+        hist.undo();
+        next = hist.current();
+        whiteboard.setSVG(next);
+        return whiteboard.setMode(whiteboard.mode);
+      };
+    })(this));
+    whiteboard.on('redo', (function(_this) {
+      return function(svg) {
+        var next;
+        hist.redo();
+        next = hist.current();
+        whiteboard.setSVG(next);
+        return whiteboard.setMode(whiteboard.mode);
+      };
+    })(this));
+    whiteboard.on('hide-preview', (function(_this) {
+      return function(svg) {
+        return preview.hide();
+      };
+    })(this));
+    whiteboard.on('show-preview', (function(_this) {
+      return function(svg) {
+        return preview.show();
+      };
+    })(this));
+    return whiteboard;
+  };
 
   template = require('./templates/whiteboard');
 
   extend(Whiteboard.prototype, EventEmitter.prototype);
+
+  function Whiteboard(selector) {
+    this.setMode = __bind(this.setMode, this);
+    this.setBackgroundHTML = __bind(this.setBackgroundHTML, this);
+    this.setSVG = __bind(this.setSVG, this);
+    this.getSVG = __bind(this.getSVG, this);
+    this.update = __bind(this.update, this);
+    this.$ = __bind(this.$, this);
+    var $svg, el, fillColor, offsetX, offsetY, paper, strokeColor, svg, _ref;
+    window.whiteboard = this;
+    this.strokeColor = strokeColor = 'black';
+    this.fillColor = fillColor = 'transparent';
+    this.tolelance = 2;
+    this.el = el = document.querySelector(selector);
+    this.$el = $(this.el);
+    this.$el.html(template());
+    this.svg = svg = document.querySelector('svg.whiteboard');
+    this.$svg = $svg = $(this.svg);
+    this.paper = paper = Snap(svg);
+    _ref = this.$svg.position(), offsetX = _ref.left, offsetY = _ref.top;
+    this.offsetX = offsetX;
+    this.offsetY = offsetY;
+    this.setupButtons();
+    this.resetLayers();
+    this.setLayer(0);
+    this.setMode('free');
+  }
+
+  Whiteboard.prototype.setupButtons = function() {
+    var $fillColor, $strokeColor;
+    this.$('.edit-free').on('click', (function(_this) {
+      return function() {
+        return _this.setMode('free');
+      };
+    })(this));
+    this.$('.edit-rect').on('click', (function(_this) {
+      return function() {
+        return _this.setMode('rect');
+      };
+    })(this));
+    this.$('.edit-line').on('click', (function(_this) {
+      return function() {
+        return _this.setMode('line');
+      };
+    })(this));
+    this.$('.edit-circle').on('click', (function(_this) {
+      return function() {
+        return _this.setMode('circle');
+      };
+    })(this));
+    this.$('.edit-eraser').on('click', (function(_this) {
+      return function() {
+        return _this.setMode('eraser');
+      };
+    })(this));
+    this.$('.edit-grab').on('click', (function(_this) {
+      return function() {
+        var grabbing;
+        $svg.off();
+        _this.setMode('grab');
+        return grabbing = false;
+      };
+    })(this));
+    $fillColor = this.$('input.fill-color').on('keyup', (function(_this) {
+      return function() {
+        return _this.fillColor = _this.$fillColor.val();
+      };
+    })(this));
+    $strokeColor = this.$('input.stroke-color').on('keyup', (function(_this) {
+      return function() {
+        return _this.strokeColor = $strokeColor.val();
+      };
+    })(this));
+    this.$('.undo').on('click', (function(_this) {
+      return function() {
+        return _this.trigger('undo');
+      };
+    })(this));
+    this.$('.redo').on('click', (function(_this) {
+      return function() {
+        return _this.trigger('redo');
+      };
+    })(this));
+    this.$('.layer0').on('click', (function(_this) {
+      return function() {
+        _this.setLayer(0);
+        return _this.showBackground();
+      };
+    })(this));
+    this.$('.layer1').on('click', (function(_this) {
+      return function() {
+        _this.setLayer(1);
+        return _this.hideBackground();
+      };
+    })(this));
+    return this.$('.layer2').on('click', (function(_this) {
+      return function() {
+        _this.setLayer(2);
+        return _this.hideBackground();
+      };
+    })(this));
+  };
 
   Whiteboard.prototype.$ = function(selector) {
     return this.$el.find(selector);
@@ -1424,7 +1566,6 @@ module.exports = window.Whiteboard = (function() {
     $bg.html(html);
     w = $bg.width();
     h = $bg.height();
-    console.log(w, h);
     return this.$svg.css({
       width: Math.max(w, 640),
       height: Math.max(h, 480)
@@ -1541,105 +1682,6 @@ module.exports = window.Whiteboard = (function() {
     })(this));
   };
 
-  function Whiteboard(selector, _arg) {
-    var $fillColor, $strokeColor, $svg, el, fillColor, offsetX, offsetY, paper, preview, strokeColor, svg, _ref;
-    preview = (_arg != null ? _arg : {}).preview;
-    this.setMode = __bind(this.setMode, this);
-    this.setBackgroundHTML = __bind(this.setBackgroundHTML, this);
-    this.setSVG = __bind(this.setSVG, this);
-    this.getSVG = __bind(this.getSVG, this);
-    this.update = __bind(this.update, this);
-    this.$ = __bind(this.$, this);
-    window.whiteboard = this;
-    this.strokeColor = strokeColor = 'black';
-    this.fillColor = fillColor = 'transparent';
-    this.el = el = document.querySelector(selector);
-    this.$el = $(this.el);
-    this.$el.html(template());
-    this.svg = svg = document.querySelector('svg.whiteboard');
-    this.$svg = $svg = $(this.svg);
-    this.paper = paper = Snap(svg);
-    window.paper = paper;
-    _ref = this.$svg.position(), offsetX = _ref.left, offsetY = _ref.top;
-    this.offsetX = offsetX;
-    this.offsetY = offsetY;
-    this.tolelance = 2;
-    this.$('.edit-free').on('click', (function(_this) {
-      return function() {
-        return _this.setMode('free');
-      };
-    })(this));
-    this.$('.edit-rect').on('click', (function(_this) {
-      return function() {
-        return _this.setMode('rect');
-      };
-    })(this));
-    this.$('.edit-line').on('click', (function(_this) {
-      return function() {
-        return _this.setMode('line');
-      };
-    })(this));
-    this.$('.edit-circle').on('click', (function(_this) {
-      return function() {
-        return _this.setMode('circle');
-      };
-    })(this));
-    this.$('.edit-eraser').on('click', (function(_this) {
-      return function() {
-        return _this.setMode('eraser');
-      };
-    })(this));
-    this.$('.edit-grab').on('click', (function(_this) {
-      return function() {
-        var grabbing;
-        $svg.off();
-        _this.setMode('grab');
-        return grabbing = false;
-      };
-    })(this));
-    $fillColor = this.$('input.fill-color').on('keyup', (function(_this) {
-      return function() {
-        return _this.fillColor = _this.$fillColor.val();
-      };
-    })(this));
-    $strokeColor = this.$('input.stroke-color').on('keyup', (function(_this) {
-      return function() {
-        return _this.strokeColor = $strokeColor.val();
-      };
-    })(this));
-    this.$('.undo').on('click', (function(_this) {
-      return function() {
-        return _this.trigger('undo');
-      };
-    })(this));
-    this.$('.redo').on('click', (function(_this) {
-      return function() {
-        return _this.trigger('redo');
-      };
-    })(this));
-    this.$('.layer0').on('click', (function(_this) {
-      return function() {
-        _this.setLayer(0);
-        return _this.showBackground();
-      };
-    })(this));
-    this.$('.layer1').on('click', (function(_this) {
-      return function() {
-        _this.setLayer(1);
-        return _this.hideBackground();
-      };
-    })(this));
-    this.$('.layer2').on('click', (function(_this) {
-      return function() {
-        _this.setLayer(2);
-        return _this.hideBackground();
-      };
-    })(this));
-    this.resetLayers();
-    this.setLayer(0);
-    this.setMode('free');
-  }
-
   Whiteboard.prototype.resetLayers = function(layerCount) {
     if (!this._layerInitialized) {
       this._layerInitialized = true;
@@ -1651,51 +1693,11 @@ module.exports = window.Whiteboard = (function() {
     }
   };
 
-  Whiteboard.start = function(selector) {
-    var hist, whiteboard;
-    whiteboard = new Whiteboard(selector);
-    hist = new HistoryManager;
-    whiteboard.on('changed', (function(_this) {
-      return function(svg) {
-        return hist.pushHistory(svg);
-      };
-    })(this));
-    whiteboard.on('undo', (function(_this) {
-      return function(svg) {
-        var next;
-        console.log('undo');
-        hist.undo();
-        next = hist.current();
-        whiteboard.setSVG(next);
-        return whiteboard.setMode(whiteboard.mode);
-      };
-    })(this));
-    whiteboard.on('redo', (function(_this) {
-      return function(svg) {
-        var next;
-        console.log('redo');
-        hist.redo();
-        next = hist.current();
-        whiteboard.setSVG(next);
-        return whiteboard.setMode(whiteboard.mode);
-      };
-    })(this));
-    whiteboard.on('hide-preview', (function(_this) {
-      return function(svg) {
-        return preview.hide();
-      };
-    })(this));
-    whiteboard.on('show-preview', (function(_this) {
-      return function(svg) {
-        return preview.show();
-      };
-    })(this));
-    return whiteboard;
-  };
-
   return Whiteboard;
 
 })();
+
+window.Whiteboard = Whiteboard;
 
 
 },{"./gestures/circle-drawing-gesture":3,"./gestures/eraser-gesture":4,"./gestures/free-drawing-gesture":5,"./gestures/grab-gesture":6,"./gestures/line-drawing-gesture":7,"./gestures/rect-drawing-gesture":8,"./history-manager":9,"./preview":13,"./templates/whiteboard":14,"./utils/event-emitter":15,"./utils/extend":16,"./utils/utils":17,"./whiteboard":18}],19:[function(require,module,exports){

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset='UTF-8'>
+  <title>CoffeeScript API Documentation</title>
+  <script src='../javascript/application.js'></script>
+  <script src='../javascript/search.js'></script>
+  <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
+</head>
+  <body>
+    <div id='base' data-path='../'></div>
+<div id='header'>
+  <div id='menu'>
+    <a href='../extra/README.md.html' title='Whiteboard'>
+      Whiteboard
+    </a>
+    &raquo;
+    <a href='../alphabetical_index.html' title='Index'>
+      Index
+    </a>
+    &raquo;
+    <span class='title'>Whiteboard</span>
+  </div>
+</div>
+    <div id='content'>
+      <h1>
+        Class:
+        Whiteboard
+      </h1>
+      <table class='box'>
+        <tr>
+          <td>Defined in:</td>
+          <td>app&#47;whiteboard.coffee</td>
+        </tr>
+      </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>Whiteboard</p>
+</div>
+<div class='tags'>
+</div>
+      <h2>Class Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#start-static'>
+        .
+(Whiteboard)
+<b>start</b><span>(selector)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      start application @param [string]
+
+    </span>
+  </li>
+</ul>
+      <h2>Instance Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#setupButtons-dynamic'>
+        #
+(void)
+<b>setupButtons</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Setup buttons for user interface 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#clearUI-dynamic'>
+        #
+(void)
+<b>clearUI</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Clear all element on UI layer 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#update-dynamic'>
+        #
+(void)
+<b>update</b><span>()</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+      Fire changed event 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getSVG-dynamic'>
+        #
+(void)
+<b>getSVG</b><span>()</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+      Get SVG 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setSVG-dynamic'>
+        #
+(void)
+<b>setSVG</b><span>(text)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+      Set SVG 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getUI-dynamic'>
+        #
+(void)
+<b>getUI</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Get UI TODO: reset correctly
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setLayer-dynamic'>
+        #
+(void)
+<b>setLayer</b><span>(n)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Set Target Layer 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#showGrid-dynamic'>
+        #
+(void)
+<b>showGrid</b><span>(xs, ys)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Show grid 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#showBackground-dynamic'>
+        #
+(void)
+<b>showBackground</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Show background 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#hideBackground-dynamic'>
+        #
+(void)
+<b>hideBackground</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Hide background 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getAnchorPoints-dynamic'>
+        #
+(void)
+<b>getAnchorPoints</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Alias to getAnchorPoints with this.layer 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setMode-dynamic'>
+        #
+(void)
+<b>setMode</b><span>(mode)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+      Set Mode 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#resetLayers-dynamic'>
+        #
+(void)
+<b>resetLayers</b><span>(layerCount)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      TODO: flexisible layer creation 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#$-dynamic'>
+        #
+(jQueryElement)
+<b>$</b><span>(selector)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+      jQuery shortcut wrap function 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setBackgroundHTML-dynamic'>
+        #
+(void)
+<b>setBackgroundHTML</b><span>(html)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
+    </span>
+  </li>
+</ul>
+      <h2>Class Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='start-static'>
+      .
+(Whiteboard)
+<b>start</b><span>(selector)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>start application
+@param [string]</p>
+</div>
+<div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt><a href='../class/Whiteboard.html'>Whiteboard</a></tt>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
+      <h2>Constructor Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='constructor-dynamic'>
+      #
+(Whiteboard)
+<b>constructor</b><span>(selector)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Constructor</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>initialized</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>selector </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt><a href='../class/Whiteboard.html'>Whiteboard</a></tt>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
+      <h2>Instance Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='setupButtons-dynamic'>
+      #
+(void)
+<b>setupButtons</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Setup buttons for user interface</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='clearUI-dynamic'>
+      #
+(void)
+<b>clearUI</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Clear all element on UI layer</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='update-dynamic'>
+      #
+(void)
+<b>update</b><span>()</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Fire changed event</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getSVG-dynamic'>
+      #
+(void)
+<b>getSVG</b><span>()</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Get SVG</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setSVG-dynamic'>
+      #
+(void)
+<b>setSVG</b><span>(text)</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Set SVG</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>text</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>CSS selector </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getUI-dynamic'>
+      #
+(void)
+<b>getUI</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Get UI
+TODO: reset correctly</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setLayer-dynamic'>
+      #
+(void)
+<b>setLayer</b><span>(n)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Set Target Layer</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>text</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>CSS selector </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='showGrid-dynamic'>
+      #
+(void)
+<b>showGrid</b><span>(xs, ys)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Show grid</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>xs</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;number&gt;</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>x axis points </span>
+    </li>
+    <li>
+      <span class='name'>ys</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;number&gt;</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>y axis points </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='showBackground-dynamic'>
+      #
+(void)
+<b>showBackground</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Show background</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='hideBackground-dynamic'>
+      #
+(void)
+<b>hideBackground</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Hide background</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getAnchorPoints-dynamic'>
+      #
+(void)
+<b>getAnchorPoints</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Alias to getAnchorPoints with this.layer</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setMode-dynamic'>
+      #
+(void)
+<b>setMode</b><span>(mode)</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Set Mode</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>mode</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>mode name </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='resetLayers-dynamic'>
+      #
+(void)
+<b>resetLayers</b><span>(layerCount)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>TODO: flexisible layer creation</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>layerCount</span>
+      <span class='type'>
+        (
+          <tt>number</tt>
+        )
+      </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='$-dynamic'>
+      #
+(jQueryElement)
+<b>$</b><span>(selector)</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>jQuery shortcut wrap function</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>selector</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>CSS selector </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      <tt>jQueryElement</tt>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setBackgroundHTML-dynamic'>
+      #
+(void)
+<b>setBackgroundHTML</b><span>(html)</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    <div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>html</span>
+      <span class='type'>
+        (
+          <tt>string</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>html string </span>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
+    </div>
+    <div id='footer'>
+  September 05, 14 17:58:11 by
+  <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
+    Codo
+  </a>
+  2.0.9
+  &#10034;
+  Press H to see the keyboard shortcuts
+  &#10034;
+  <a href='http://twitter.com/netzpirat' target='_parent'>@netzpirat</a>
+  &#10034;
+  <a href='http://twitter.com/_inossidabile' target='_parent'>@_inossidabile</a>
+</div>
+<iframe id='search_frame'></iframe>
+<div id='fuzzySearch'>
+  <input type='text'>
+  <ol></ol>
+</div>
+<div id='help'>
+  <p>
+    Quickly fuzzy find classes, mixins, methods, file:
+  </p>
+  <ul>
+    <li>
+      <span>T</span>
+      Open fuzzy finder dialog
+    </li>
+  </ul>
+  <p>
+    Control the navigation frame:
+  </p>
+  <ul>
+    <li>
+      <span>L</span>
+      Toggle list view
+    </li>
+    <li>
+      <span>C</span>
+      Show class list
+    </li>
+    <li>
+      <span>I</span>
+      Show mixin list
+    </li>
+    <li>
+      <span>F</span>
+      Show file list
+    </li>
+    <li>
+      <span>M</span>
+      Show method list
+    </li>
+    <li>
+      <span>E</span>
+      Show extras list
+    </li>
+  </ul>
+  <p>
+    You can focus and blur the search input:
+  </p>
+  <ul>
+    <li>
+      <span>S</span>
+      Focus search input
+    </li>
+    <li>
+      <span>Esc</span>
+      Blur search input
+    </li>
+  </ul>
+</div>
+  </body>
+</html>
