@@ -9,6 +9,7 @@
   "author": "mizchi",
   "license": "MIT",
   "devDependencies": {
+    "blanket": "^1.1.6",
     "browser-sync": "^1.3.2",
     "browserify": "^4.1.11",
     "coffee-script": "^1.7.1",

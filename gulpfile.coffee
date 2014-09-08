@@ -34,10 +34,11 @@ gulp.task 'test-js', ->
     extensions: ['.coffee','.jade', '.js']
   .transform 'coffeeify'
   .transform 'jadeify'
+  # .transform 'coverify'
   .bundle()
   .pipe plumber()
   .pipe source 'test.js'
-  .pipe gulp.dest 'test/assets'
+  .pipe gulp.dest 'test/runners'
 
 gulp.task 'vendor', ->
   gulp
@@ -60,13 +61,17 @@ gulp.task 'watch', ['build', 'server'], ->
   gulp.watch 'bower_components/**/*.js', ['vendor', 'reload']
 
 gulp.task 'test', ['test-js'], shell.task [
-  'mocha-phantomjs test/assets/index.html'
+  'mocha-phantomjs test/runners/test.html'
 ]
 
 gulp.task 'test-with-build', ['build', 'test-js'], shell.task [
-  'mocha-phantomjs test/assets/index.html'
+  'mocha-phantomjs test/runners/test.html'
+]
+
+gulp.task 'coverage', ['test-js'], shell.task [
+  'jscoverage test/runners/test.js'
+  'mocha-phantomjs -R json-cov test/runners/test-cov.html | json2htmlcov > coverage.html'
 ]
 
 gulp.task 'build', ['vendor', 'js', 'css']
 gulp.task 'default', ['build']
-

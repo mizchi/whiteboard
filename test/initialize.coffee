@@ -1,5 +1,9 @@
 # require '../app/initialize'
 
-window.test_run = ->
+
+if false
+  'Never run'
+
+window?.test_run = ->
   require './whiteboard'
   require './utils/utils'

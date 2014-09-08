@@ -9,6 +9,7 @@ lcov.info
 *.out
 *.pid
 *.gz
+coverage.html
 
 pids
 logs
