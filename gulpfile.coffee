@@ -7,6 +7,7 @@ bowerFiles  = require "main-bower-files"
 source      = require 'vinyl-source-stream'
 browserify  = require 'browserify'
 browserSync = require 'browser-sync'
+shell       = require 'gulp-shell'
 
 gulp.task 'server', ->
   browserSync
@@ -26,6 +27,17 @@ gulp.task 'js', ->
   .pipe plumber()
   .pipe source 'whiteboard.js'
   .pipe gulp.dest 'public'
+
+gulp.task 'test-js', ->
+  browserify
+    entries: ['./test/initialize.coffee']
+    extensions: ['.coffee','.jade', '.js']
+  .transform 'coffeeify'
+  .transform 'jadeify'
+  .bundle()
+  .pipe plumber()
+  .pipe source 'test.js'
+  .pipe gulp.dest 'test/assets'
 
 gulp.task 'vendor', ->
   gulp
@@ -47,5 +59,14 @@ gulp.task 'watch', ['build', 'server'], ->
   gulp.watch 'app/styles/**/*.scss', ['css', 'reload']
   gulp.watch 'bower_components/**/*.js', ['vendor', 'reload']
 
+gulp.task 'test', ['test-js'], shell.task [
+  'mocha-phantomjs test/assets/index.html'
+]
+
+gulp.task 'test-with-build', ['build', 'test-js'], shell.task [
+  'mocha-phantomjs test/assets/index.html'
+]
+
 gulp.task 'build', ['vendor', 'js', 'css']
 gulp.task 'default', ['build']
+
