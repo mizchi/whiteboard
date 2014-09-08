@@ -12,6 +12,7 @@ lcov.info
 
 pids
 logs
+doc
 results
 build
 .grunt

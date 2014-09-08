@@ -15,6 +15,8 @@ HistoryManager = require './history-manager'
 int = parseInt
 
 # Whiteboard
+# @example
+#    new Whiteboard '.whiteboard-container'
 class Whiteboard
   # start application
   # @param [string]
@@ -90,6 +92,7 @@ class Whiteboard
     @setMode 'free'
 
   # Setup buttons for user interface
+  # @private
   setupButtons: ->
     @$('.edit-free').on   'click', => @setMode 'free'
     @$('.edit-rect').on   'click', => @setMode 'rect'
@@ -164,9 +167,11 @@ class Whiteboard
         style: "stroke:rgba(200,200,200, 0.5);stroke-width:1"
 
   # Show background
+  # @private
   showBackground: -> @$('.bg').show()
 
   # Hide background
+  # @private
   hideBackground: -> @$('.bg').hide()
 
   # Alias to getAnchorPoints with this.layer
@@ -204,6 +209,7 @@ class Whiteboard
       $y.text y
 
   # TODO: flexisible layer creation
+  # @private
   # @param [number] layerCount
   resetLayers: (layerCount) ->
     unless @_layerInitialized

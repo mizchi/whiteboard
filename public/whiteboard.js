@@ -1148,7 +1148,7 @@ var EventEmitter,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
-module.exports = EventEmitter = (function() {
+EventEmitter = (function() {
   function EventEmitter() {
     this.trigger = __bind(this.trigger, this);
     this.off = __bind(this.off, this);
@@ -1203,6 +1203,8 @@ module.exports = EventEmitter = (function() {
 
 })();
 
+module.exports = EventEmitter;
+
 
 },{}],15:[function(require,module,exports){
 var extend;
@@ -1220,22 +1222,22 @@ module.exports = extend = (function(_this) {
 
 
 },{}],16:[function(require,module,exports){
-var adjustToNearPoint, getAnchorPoints, int, pathToPoints, pointsToSegments,
+var adjustToNearPoint, getAnchorPoints, int, pathToPoints, pointsToSegments, segementsToPoints,
   __slice = [].slice;
 
 int = parseInt;
 
-pointsToSegments = function(_arg) {
-  var body, ex, ey, segments, sx, sy, _ref, _ref1;
-  (_ref = _arg[0], sx = _ref[0], sy = _ref[1]), body = 2 <= _arg.length ? __slice.call(_arg, 1) : [];
-  segments = [].concat([['M', sx, sy]], body.map((function(_this) {
+pointsToSegments = function(points) {
+  var body, ex, ey, segs, sx, sy, _ref, _ref1;
+  (_ref = points[0], sx = _ref[0], sy = _ref[1]), body = 2 <= points.length ? __slice.call(points, 1) : [];
+  segs = [].concat([['M', sx, sy]], body.map((function(_this) {
     return function() {
       var lx, ly;
       lx = sx;
       ly = sy;
-      return function(_arg1) {
+      return function(_arg) {
         var dx, dy, x, y;
-        x = _arg1[0], y = _arg1[1];
+        x = _arg[0], y = _arg[1];
         dx = x - lx;
         dy = y - ly;
         lx = x;
@@ -1246,9 +1248,31 @@ pointsToSegments = function(_arg) {
   })(this)()));
   _ref1 = _.last(body), ex = _ref1[0], ey = _ref1[1];
   if (sx === ex && sy === ey) {
-    segments[segments.length - 1] = ['Z'];
+    segs[segs.length - 1] = ['Z'];
   }
-  return segments;
+  return segs;
+};
+
+segementsToPoints = function(segments) {
+  var body, sx, sy, t, _ref;
+  (_ref = segments[0], t = _ref[0], sx = _ref[1], sy = _ref[2]), body = 2 <= segments.length ? __slice.call(segments, 1) : [];
+  return [].concat([[sx, sy]], body.map((function(_this) {
+    return function() {
+      var cx, cy;
+      cx = sx;
+      cy = sy;
+      return function(_arg) {
+        var t, x, y;
+        t = _arg[0], x = _arg[1], y = _arg[2];
+        if (t === 'Z') {
+          return [sx, sy];
+        }
+        cx += x;
+        cy += y;
+        return [cx, cy];
+      };
+    };
+  })(this)()));
 };
 
 pathToPoints = function($path) {

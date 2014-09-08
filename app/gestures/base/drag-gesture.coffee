@@ -1,6 +1,9 @@
 Gesture = require './gesture'
+
+# Drag Gesture Class
 module.exports =
 class DragGesture extends Gesture
+  # @param [onDragging]
   constructor: (@wb) ->
     super
     @onDragging = false

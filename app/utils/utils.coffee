@@ -1,6 +1,10 @@
 int = parseInt
 
 # Point[] -> Segment[]
+# @example
+#    points = [[1, 2], [3, 4], [4, 5]]
+#    segments = pointsToSegments points
+#
 # @param [Array<Point>] points
 # @return [Array<Segment>]
 pointsToSegments = (points) ->
@@ -21,6 +25,11 @@ pointsToSegments = (points) ->
   segs
 
 # Segment[] -> Point[]
+# @example
+#   $path = Snap.select('path')
+#   segments = $path.attr('g')
+#   points = segementsToPoints(segments)
+#
 # @param [Array<Segment>] segments
 # @return [Array<Point>]
 segementsToPoints = (segments) ->
@@ -37,11 +46,17 @@ segementsToPoints = (segments) ->
 # Snap.Path -> Point[]
 # @param [Snap.Path] $path
 # @return [Array<Point>]
+# @example
+#   $path = Snap.select('path')
+#   points = segementsToPoints($path)
 pathToPoints = ($path) ->
   segments = Snap.parsePathString $path.attr('d')
   segementsToPoints segments
 
 # Point * Point[] * Int? -> Point
+# @example
+#   adjustToNearPoint 6, [2, 3, 7, 10], 2 #=> 7
+#
 # @param [number] n base value
 # @param [Array<number>] points canditates
 # @option [number] force adjust power(default=3)
@@ -52,6 +67,10 @@ adjustToNearPoint = (n, points, force = 3) ->
   null
 
 # Snap.Group -> {xs :: Int[], ys :: Int[]}
+# @example
+#   layer = Snap.select('g')
+#   getAnchorPoints layer #=> [[3, 5], [4, 9]]
+#
 # @param [Snap.Group] layer target Snap.Group
 # @return [Array<number>]
 getAnchorPoints = (layer) ->

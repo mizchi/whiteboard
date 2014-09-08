@@ -11,6 +11,13 @@ gulp
 open public/index.html
 ```
 
+## Documents
+
+```
+npm install codo -g
+codo app/
+```
+
 ## Example
 
 ```html

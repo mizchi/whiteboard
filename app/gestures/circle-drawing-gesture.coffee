@@ -1,4 +1,3 @@
-# Gesture = require './base/gesture'
 DragGesture = require './base/drag-gesture'
 module.exports =
 class CircleDrawingGesture extends DragGesture
