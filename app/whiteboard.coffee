@@ -17,11 +17,11 @@ int = parseInt
 # Whiteboard
 # @example
 #    new Whiteboard '.whiteboard-container'
-class Whiteboard
+module.exports = class Whiteboard
   # start application
   # @param [string]
   # @return [Whiteboard]
-  @start: (selector) ->
+  @initializeWithHistoryManager: (selector) ->
     whiteboard = new Whiteboard(selector)
     hist = new HistoryManager
 
@@ -100,7 +100,7 @@ class Whiteboard
     @$('.edit-circle').on 'click', => @setMode 'circle'
     @$('.edit-eraser').on 'click', => @setMode 'eraser'
     @$('.edit-grab').on 'click', =>
-      $svg.off()
+      @$svg.off()
       @setMode 'grab'
       grabbing = false
 
@@ -203,7 +203,10 @@ class Whiteboard
     $x = $('.mouse-x')
     $y = $('.mouse-y')
     @$svg.on 'mousemove touchmove', (ev) =>
+      # console.log 'offset', ev.offsetX, ev.offsetY
+      {left, top} = @$svg.offset()
       gesture._onTouchMove(ev)
+
       [x, y] = gesture.getPoint(ev)
       $x.text x
       $y.text y

@@ -1,5 +1,4 @@
 Gesture = require './base/gesture'
-DragGesture = require './base/drag-gesture'
 {pointsToSegments} = require '../utils/utils'
 
 _simplify = (points, tolelance) ->
@@ -8,29 +7,39 @@ _simplify = (points, tolelance) ->
   ).map ({x, y}) => [x, y]
 
 module.exports =
-class FreeDrawingGesture extends DragGesture
-  onDragStart: (ev) =>
-    @lastPath = null
+class FreeDrawingGesture extends Gesture
+  constructor: ->
+    super
+    @points = []
 
-  onDrag: (ev) =>
-    @lastPath?.remove()
-    segs = pointsToSegments @points
+    [sx, sy] = []
 
-    @lastPath = @currentLayer().path
-      path: segs
-      fill: "none"
-      stroke: @wb.strokeColor
-      fill: @wb.fillColor
-      strokeWidth: 1
+    @paper.drag (dx, dy, x, y, event) =>
+      @points.push [sx+dx, sy+dy]
+      @lastPath?.remove()
+      segments = pointsToSegments @points
+      @lastPath = @currentLayer().path
+        path: segments
+        fill: "none"
+        stroke: @wb.strokeColor
+        fill: @wb.fillColor
+        strokeWidth: 1
 
-  onDragEnd: (ev) =>
-    @lastPath?.remove()
+    , (x, y, event) =>
+      @points = []
+      @lastPath = null
 
-    segs = pointsToSegments _simplify @points
-    @currentLayer().path
-      path: segs
-      fill: "none"
-      stroke: @wb.strokeColor
-      fill: @wb.fillColor
-      strokeWidth: 1
-    @wb.update()
+      [sx, sy] = @getPoint(event)
+      @points.push [sx, sy]
+
+    , =>
+      @lastPath?.remove()
+
+      segments = pointsToSegments _simplify @points
+      @currentLayer().path
+        path: segments
+        fill: "none"
+        stroke: @wb.strokeColor
+        fill: @wb.fillColor
+        strokeWidth: 1
+      @wb.update()

@@ -39,7 +39,14 @@ class Gesture
 
   getPoint: (ev) =>
     # TODO: Fix for android
-    [
-      ev.offsetX - @wb.offsetX
-      ev.offsetY - @wb.offsetY
-    ]
+    if ev.offsetX
+      [
+        ev.offsetX - @wb.offsetX
+        ev.offsetY - @wb.offsetY
+      ]
+    else
+      {left, top} = @wb.$svg.offset()
+      [
+        ev.pageX - left # - @wb.offsetX
+        ev.pageY - top # - @wb.offsetY
+      ]

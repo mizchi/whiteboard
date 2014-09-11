@@ -154,7 +154,13 @@ module.exports = Gesture = (function() {
   Gesture.prototype.dispose = function() {};
 
   Gesture.prototype.getPoint = function(ev) {
-    return [ev.offsetX - this.wb.offsetX, ev.offsetY - this.wb.offsetY];
+    var left, top, _ref;
+    if (ev.offsetX) {
+      return [ev.offsetX - this.wb.offsetX, ev.offsetY - this.wb.offsetY];
+    } else {
+      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
+      return [ev.pageX - left, ev.pageY - top];
+    }
   };
 
   return Gesture;
@@ -251,14 +257,11 @@ module.exports = EraserDrawingGesture = (function(_super) {
 
 
 },{"./base/gesture":2}],5:[function(require,module,exports){
-var DragGesture, FreeDrawingGesture, Gesture, pointsToSegments, _simplify,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+var FreeDrawingGesture, Gesture, pointsToSegments, _simplify,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Gesture = require('./base/gesture');
-
-DragGesture = require('./base/drag-gesture');
 
 pointsToSegments = require('../utils/utils').pointsToSegments;
 
@@ -285,53 +288,59 @@ module.exports = FreeDrawingGesture = (function(_super) {
   __extends(FreeDrawingGesture, _super);
 
   function FreeDrawingGesture() {
-    this.onDragEnd = __bind(this.onDragEnd, this);
-    this.onDrag = __bind(this.onDrag, this);
-    this.onDragStart = __bind(this.onDragStart, this);
-    return FreeDrawingGesture.__super__.constructor.apply(this, arguments);
+    var sx, sy, _ref;
+    FreeDrawingGesture.__super__.constructor.apply(this, arguments);
+    this.points = [];
+    _ref = [], sx = _ref[0], sy = _ref[1];
+    this.paper.drag((function(_this) {
+      return function(dx, dy, x, y, event) {
+        var segments, _ref1;
+        _this.points.push([sx + dx, sy + dy]);
+        if ((_ref1 = _this.lastPath) != null) {
+          _ref1.remove();
+        }
+        segments = pointsToSegments(_this.points);
+        return _this.lastPath = _this.currentLayer().path({
+          path: segments,
+          fill: "none",
+          stroke: _this.wb.strokeColor,
+          fill: _this.wb.fillColor,
+          strokeWidth: 1
+        });
+      };
+    })(this), (function(_this) {
+      return function(x, y, event) {
+        var _ref1;
+        _this.points = [];
+        _this.lastPath = null;
+        _ref1 = _this.getPoint(event), sx = _ref1[0], sy = _ref1[1];
+        return _this.points.push([sx, sy]);
+      };
+    })(this), (function(_this) {
+      return function() {
+        var segments, _ref1;
+        if ((_ref1 = _this.lastPath) != null) {
+          _ref1.remove();
+        }
+        segments = pointsToSegments(_simplify(_this.points));
+        _this.currentLayer().path({
+          path: segments,
+          fill: "none",
+          stroke: _this.wb.strokeColor,
+          fill: _this.wb.fillColor,
+          strokeWidth: 1
+        });
+        return _this.wb.update();
+      };
+    })(this));
   }
-
-  FreeDrawingGesture.prototype.onDragStart = function(ev) {
-    return this.lastPath = null;
-  };
-
-  FreeDrawingGesture.prototype.onDrag = function(ev) {
-    var segs, _ref;
-    if ((_ref = this.lastPath) != null) {
-      _ref.remove();
-    }
-    segs = pointsToSegments(this.points);
-    return this.lastPath = this.currentLayer().path({
-      path: segs,
-      fill: "none",
-      stroke: this.wb.strokeColor,
-      fill: this.wb.fillColor,
-      strokeWidth: 1
-    });
-  };
-
-  FreeDrawingGesture.prototype.onDragEnd = function(ev) {
-    var segs, _ref;
-    if ((_ref = this.lastPath) != null) {
-      _ref.remove();
-    }
-    segs = pointsToSegments(_simplify(this.points));
-    this.currentLayer().path({
-      path: segs,
-      fill: "none",
-      stroke: this.wb.strokeColor,
-      fill: this.wb.fillColor,
-      strokeWidth: 1
-    });
-    return this.wb.update();
-  };
 
   return FreeDrawingGesture;
 
-})(DragGesture);
+})(Gesture);
 
 
-},{"../utils/utils":16,"./base/drag-gesture":1,"./base/gesture":2}],6:[function(require,module,exports){
+},{"../utils/utils":16,"./base/gesture":2}],6:[function(require,module,exports){
 var CircleOperation, Gesture, GrabGesture, PathOperation, RectOperation, adjustToNearPoint, pathToPoints, pointsToSegments, segementsToPoints, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1355,10 +1364,10 @@ HistoryManager = require('./history-manager');
 
 int = parseInt;
 
-Whiteboard = (function() {
+module.exports = Whiteboard = (function() {
   var template;
 
-  Whiteboard.start = function(selector) {
+  Whiteboard.initializeWithHistoryManager = function(selector) {
     var hist, whiteboard;
     whiteboard = new Whiteboard(selector);
     hist = new HistoryManager;
@@ -1459,7 +1468,7 @@ Whiteboard = (function() {
     this.$('.edit-grab').on('click', (function(_this) {
       return function() {
         var grabbing;
-        $svg.off();
+        _this.$svg.off();
         _this.setMode('grab');
         return grabbing = false;
       };
@@ -1617,9 +1626,10 @@ Whiteboard = (function() {
     $y = $('.mouse-y');
     return this.$svg.on('mousemove touchmove', (function(_this) {
       return function(ev) {
-        var x, y, _ref1;
+        var left, top, x, y, _ref1, _ref2;
+        _ref1 = _this.$svg.offset(), left = _ref1.left, top = _ref1.top;
         gesture._onTouchMove(ev);
-        _ref1 = gesture.getPoint(ev), x = _ref1[0], y = _ref1[1];
+        _ref2 = gesture.getPoint(ev), x = _ref2[0], y = _ref2[1];
         $x.text(x);
         return $y.text(y);
       };
