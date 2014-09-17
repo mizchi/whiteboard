@@ -65,7 +65,7 @@ module.exports = Gesture = (function() {
     if (ev.offsetX) {
       return [ev.offsetX - this.wb.offsetX, ev.offsetY - this.wb.offsetY];
     } else {
-      _ref = this.wb.offset(), left = _ref.left, top = _ref.top;
+      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
       return [ev.pageX - left, ev.pageY - top];
     }
   };
@@ -144,7 +144,8 @@ module.exports = EraserDrawingGesture = (function(_super) {
       return function($shape) {
         return $shape.mousemove(function() {
           if (_this.eraser) {
-            return $shape.remove();
+            $shape.remove();
+            return _this.wb.update();
           }
         });
       };
@@ -485,7 +486,8 @@ module.exports = LineDrawingGesture = (function(_super) {
       return function() {
         _this.nearPoints = getPathPositions(_this.currentLayer());
         showAnchorsToShape(_this.lastShape, _this.wb);
-        return _this.lastShape = null;
+        _this.lastShape = null;
+        return _this.wb.update();
       };
     })(this));
   }

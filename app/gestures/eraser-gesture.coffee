@@ -8,7 +8,9 @@ class EraserDrawingGesture extends Gesture
     @eraser = false
     @currentLayer().selectAll('*').forEach ($shape) =>
       $shape.mousemove =>
-        if @eraser then $shape.remove()
+        if @eraser
+          $shape.remove()
+          @wb.update()
 
     @wb.paper.mousedown => @eraser = true
     @wb.paper.mouseup => @eraser = false

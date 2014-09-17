@@ -17,7 +17,10 @@
     <div class='whiteboard-container'></div>
     <script charset="utf-8">
       $(function(){
-        new Whiteboard('.whiteboard-container');
+        var wb = new Whiteboard('.whiteboard-container');
+        wb.on('changed', function(){
+          console.log('updated');
+        });
       });
     </script>
   </body>

@@ -40,7 +40,7 @@ class Gesture
         ev.offsetY - @wb.offsetY
       ]
     else
-      {left, top} = @wb.offset()
+      {left, top} = @wb.$svg.offset()
       [
         ev.pageX - left
         ev.pageY - top

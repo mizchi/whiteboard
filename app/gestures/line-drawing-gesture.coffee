@@ -101,6 +101,7 @@ class LineDrawingGesture extends Gesture
       @nearPoints = getPathPositions @currentLayer()
       showAnchorsToShape @lastShape, @wb
       @lastShape = null
+      @wb.update()
 
   dispose: ->
     @wb.paper.undrag()
