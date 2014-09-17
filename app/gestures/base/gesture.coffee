@@ -1,16 +1,10 @@
 EventEmitter = require '../../utils/event-emitter'
 extend = require '../../utils/extend'
 
+# Base Gesture for Mode
 module.exports =
 class Gesture
   constructor: (@wb) ->
-    @paper = @wb.paper
-
-  select: ->
-    Snap(@wb.svg).select arguments...
-
-  selectAll: ->
-    Snap(@wb.svg).selectAll arguments...
 
   currentLayer: -> @wb.layer
 
@@ -35,18 +29,19 @@ class Gesture
   _onTouchEnd: -> @onTouchEnd arguments...
   onTouchEnd: ->
 
+  # Called at change mode
   dispose: ->
 
   getPoint: (ev) =>
-    # TODO: Fix for android
+    # TODO: Fix for touch ui
     if ev.offsetX
       [
         ev.offsetX - @wb.offsetX
         ev.offsetY - @wb.offsetY
       ]
     else
-      {left, top} = @wb.$svg.offset()
+      {left, top} = @wb.offset()
       [
-        ev.pageX - left # - @wb.offsetX
-        ev.pageY - top # - @wb.offsetY
+        ev.pageX - left
+        ev.pageY - top
       ]

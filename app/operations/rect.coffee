@@ -1,7 +1,10 @@
+# Grab operation for rect
 {pointsToSegments, segementsToPoints, adjustToNearPoint, pathToPoints} = require '../utils/utils'
 
 int = parseInt
 
+# on focus rect element
+# Show 4 point to drag to reshape on UI
 focus = ($shape, wb) ->
   x = int $shape.attr('x')
   y = int $shape.attr('y')
@@ -23,7 +26,10 @@ focus = ($shape, wb) ->
 
   [lx, ly, lw, lh, xs, ys] = [x, y, w, h, [], []]
   padding = 5
+
+  # Reshaping function for each points
   [
+    # leftTop
     {
       shape: $leftTop
       x: (dx, dy, x, y, w, h) -> x + dx
@@ -41,6 +47,7 @@ focus = ($shape, wb) ->
           h += dy
         [x, y, w, h]
     }
+    # rightTop
     {
       shape: $rightTop
       x: (dx, dy, x, y, w, h) -> x
@@ -58,6 +65,7 @@ focus = ($shape, wb) ->
           h += dy
         [x, y, w, h]
     }
+    # rightBottom
     {
       shape: $rightBottom
       x: (dx, dy, x, y, w, h) -> x
@@ -75,6 +83,7 @@ focus = ($shape, wb) ->
           h = ay - y
         [x, y, w, h]
     }
+    # leftBottom
     {
       shape: $leftBottom
       x: (dx, dy, x, y, w, h) -> x + dx
@@ -120,6 +129,7 @@ focus = ($shape, wb) ->
       wb.clearUI()
       wb.update()
 
+# on watch rect element
 watch = ($shape, wb) ->
   wb.paper.mousedown (ev) => wb.clearUI()
   disposeFocus = null

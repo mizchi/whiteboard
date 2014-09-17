@@ -1,4 +1,6 @@
 Gesture = require './base/gesture'
+
+## Eraser moder
 module.exports =
 class EraserDrawingGesture extends Gesture
   constructor: ->
@@ -8,5 +10,8 @@ class EraserDrawingGesture extends Gesture
       $shape.mousemove =>
         if @eraser then $shape.remove()
 
-    @paper.mousedown => @eraser = true
-    @paper.mouseup => @eraser = false
+    @wb.paper.mousedown => @eraser = true
+    @wb.paper.mouseup => @eraser = false
+
+  dispose: ->
+    @wb.paper.undrag()

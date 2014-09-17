@@ -1,8 +1,10 @@
+# Grab operation for circle
+
 {pointsToSegments, segementsToPoints, adjustToNearPoint, pathToPoints} = require '../utils/utils'
 int = parseInt
 
+# TODO
 focus = ($path, wb) ->
-  # TODO
   ->
 
 watch = ($circle, wb) ->

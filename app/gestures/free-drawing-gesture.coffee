@@ -6,6 +6,7 @@ _simplify = (points, tolelance) ->
     (points.map ([x, y]) => {x, y}), tolelance, false
   ).map ({x, y}) => [x, y]
 
+# Free drawing mode
 module.exports =
 class FreeDrawingGesture extends Gesture
   constructor: ->
@@ -14,7 +15,7 @@ class FreeDrawingGesture extends Gesture
 
     [sx, sy] = []
 
-    @paper.drag (dx, dy, x, y, event) =>
+    @wb.paper.drag (dx, dy, x, y, event) =>
       @points.push [sx+dx, sy+dy]
       @lastPath?.remove()
       segments = pointsToSegments @points
@@ -43,3 +44,6 @@ class FreeDrawingGesture extends Gesture
         fill: @wb.fillColor
         strokeWidth: 1
       @wb.update()
+
+  dispose: ->
+    @wb.paper.undrag()

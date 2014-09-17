@@ -1,8 +1,8 @@
-DragGesture = require './base/drag-gesture'
 Gesture = require './base/gesture'
 {pointsToSegments, segementsToPoints} = require '../utils/utils'
 
 # Layer -> (x:Int y:Int Path)[]
+# Enumerate path connectable points
 getPathPositions = ($group) ->
   points = []
   $group.selectAll('path').forEach ($path) =>
@@ -10,7 +10,6 @@ getPathPositions = ($group) ->
     ps = segementsToPoints segments
     points.push _.first(ps).concat $path
     points.push _.last(ps).concat $path
-    # points.push (ps.map ([x, y]) -> [x, y, $path])...
   points
 
 # base:Point * canditates:Point[] -> (index:Int cost:Int Shape Int)?
@@ -34,6 +33,7 @@ getNearPoint = ([sx, sy], points, force = 10) ->
   else
     null
 
+# show points
 showAnchorsToShape = (shape, wb) ->
   segs = Snap.parsePathString(shape.attr('d'))
   points = segementsToPoints(segs)
@@ -42,29 +42,24 @@ showAnchorsToShape = (shape, wb) ->
     $circle.mousemove => $circle.attr 'stroke', 'red'
     $circle.mouseout => $circle.attr 'stroke', 'blue'
 
+# Line drawing mode
 module.exports =
 class LineDrawingGesture extends Gesture
   dispose: ->
-    @paper.undrag()
+    @wb.paper.undrag()
 
   constructor: ->
     super
     @nearPoints = getPathPositions @currentLayer()
 
-    sx = null
-    sy = null
-    ex = null
-    ey = null
-
+    # States
+    [sx, sy, ex, ey] = []
     mode = '' # head/tail/isolate
-
     pathArray = null
     fromShape = null
+    points = null # Point[]
 
-    points = null
-
-    @paper.drag (dx, dy, x, y, event) =>
-      console.log 'line draging', dx, dy, x, y
+    @wb.paper.drag (dx, dy, x, y, event) =>
       segs = null
       [ex, ey] = [dx+sx, dy+sy]
       if p = getNearPoint([ex, ey], @nearPoints)
@@ -89,7 +84,6 @@ class LineDrawingGesture extends Gesture
         strokeWidth: 1
 
     , (x, y, event) =>
-      console.log 'line drag start', x, y
       sx = event.offsetX
       sy = event.offsetY
       if p = getNearPoint([sx, sy], @nearPoints)
@@ -107,3 +101,6 @@ class LineDrawingGesture extends Gesture
       @nearPoints = getPathPositions @currentLayer()
       showAnchorsToShape @lastShape, @wb
       @lastShape = null
+
+  dispose: ->
+    @wb.paper.undrag()

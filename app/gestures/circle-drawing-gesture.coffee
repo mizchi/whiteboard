@@ -1,29 +1,29 @@
-DragGesture = require './base/drag-gesture'
+Gesture = require './base/gesture'
+
+# Circle drawing mode
 module.exports =
-class CircleDrawingGesture extends DragGesture
+class CircleDrawingGesture extends Gesture
   constructor: ->
     super
-    @startPoint = null
-    @endPoint   = null
+    [sx, sy] = []
 
-  onDrag: (ev) =>
-    @endPoint = @getPoint(ev)
-    @lastShape?.remove()
+    @wb.paper.drag (dx, dy, x, y, event) =>
+      @lastShape?.remove()
 
-    [sx, sy] = @firstPoint()
-    [ex, ey] = @lastPoint()
+      [ex, ey] = [sx + dx, sy + dy]
 
-    x = sx
-    y = sy
+      r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
+      circle = @currentLayer().circle sx, sy, r
+      circle.attr
+        strokeWidth: 1
+        stroke: @wb.strokeColor
+        fill: @wb.fillColor
+      @lastShape = circle
+    , (x, y, event) =>
+      [sx, sy] = @getPoint(event)
+    , =>
+      @wb.update()
+      @lastShape = null
 
-    r = Math.max Math.abs(sx - ex), Math.abs(sy - ey)
-    circle = @currentLayer().circle x, y, r
-    circle.attr
-      strokeWidth: 1
-      stroke: @wb.strokeColor
-      fill: @wb.fillColor
-    @lastShape = circle
-
-  onDragEnd: (ev) =>
-    @wb.update()
-    @lastShape = null
+  dispose: ->
+    @wb.paper.undrag()

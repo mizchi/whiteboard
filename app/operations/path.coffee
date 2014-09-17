@@ -1,5 +1,8 @@
+# Grab operation for path
+
 {pointsToSegments, segementsToPoints, adjustToNearPoint, pathToPoints} = require '../utils/utils'
 
+# on focus path element
 focus = ($path, wb) ->
   points = pathToPoints $path
   $points = points.map ([sx, sy], index) =>
@@ -33,6 +36,7 @@ focus = ($path, wb) ->
     for $p in $points
       $p.remove()
 
+# on watch path element
 watch = ($path, wb) ->
   points = pathToPoints $path
   wb.paper.mousedown (ev) => wb.clearUI()

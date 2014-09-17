@@ -8,7 +8,6 @@ GrabGesture          = require './gestures/grab-gesture'
 
 # Utilities
 EventEmitter      = require './utils/event-emitter'
-extend            = require './utils/extend'
 {getAnchorPoints} = require './utils/utils'
 
 HistoryManager = require './history-manager'
@@ -51,7 +50,7 @@ module.exports = class Whiteboard
   # string template
   template = require './templates/whiteboard'
 
-  extend @::, EventEmitter::
+  _.extend @::, EventEmitter::
 
   # @param {string} fillColor fill color
   # @param {string} strokeColor stroke color
@@ -224,12 +223,15 @@ module.exports = class Whiteboard
       ]
       @ui = @paper.g().addClass 'ui'
     else
+      @svg = svg = document.querySelector 'svg.whiteboard'
+      @$svg = $svg = $(@svg)
+      @paper = paper = Snap(svg)
+      @ui = Snap.select('.ui')
       @layers = [
         Snap.select('.l0')
         Snap.select('.l1')
         Snap.select('.l2')
       ]
-      @ui = Snap.select('.ui')
 
   # jQuery shortcut wrap function
   # @param [string] selector CSS selector

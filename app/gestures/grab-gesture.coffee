@@ -5,6 +5,8 @@ CircleOperation = require '../operations/circle'
 
 {pointsToSegments, segementsToPoints, adjustToNearPoint, pathToPoints} = require '../utils/utils'
 
+# Element grab mode
+# Use operations/* class for element type(circle, rect, path...)
 module.exports =
 class GrabGesture extends Gesture
   constructor: ->
