@@ -11,12 +11,13 @@ module.exports =
 class FreeDrawingGesture extends Gesture
   constructor: ->
     super
-    @points = []
 
+    @points = []
     [sx, sy] = []
 
     @wb.paper.drag (dx, dy, x, y, event) =>
       @points.push [sx+dx, sy+dy]
+
       @lastPath?.remove()
       segments = pointsToSegments @points
       @lastPath = @currentLayer().path
@@ -29,12 +30,11 @@ class FreeDrawingGesture extends Gesture
     , (x, y, event) =>
       @points = []
       @lastPath = null
-
-      [sx, sy] = @getPoint(event)
+      [sx, sy] = @getStartPoint(x, y, event)
       @points.push [sx, sy]
-
     , =>
       @lastPath?.remove()
+      return if @points.length is 1
 
       segments = pointsToSegments _simplify @points
       @currentLayer().path

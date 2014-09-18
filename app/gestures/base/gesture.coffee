@@ -32,8 +32,13 @@ class Gesture
   # Called at change mode
   dispose: ->
 
+  getStartPoint: (x, y, ev) ->
+    if @wb.ua is 'firefox'
+      [x - @wb.offsetX, y - @wb.offsetY]
+    else
+      @getPoint(ev)
+
   getPoint: (ev) =>
-    # TODO: Fix for touch ui
     if ev.offsetX
       [
         ev.offsetX - @wb.offsetX

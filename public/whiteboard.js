@@ -60,6 +60,14 @@ module.exports = Gesture = (function() {
 
   Gesture.prototype.dispose = function() {};
 
+  Gesture.prototype.getStartPoint = function(x, y, ev) {
+    if (this.wb.ua === 'firefox') {
+      return [x - this.wb.offsetX, y - this.wb.offsetY];
+    } else {
+      return this.getPoint(ev);
+    }
+  };
+
   Gesture.prototype.getPoint = function(ev) {
     var left, top, _ref;
     if (ev.offsetX) {
@@ -228,7 +236,7 @@ module.exports = FreeDrawingGesture = (function(_super) {
         var _ref1;
         _this.points = [];
         _this.lastPath = null;
-        _ref1 = _this.getPoint(event), sx = _ref1[0], sy = _ref1[1];
+        _ref1 = _this.getStartPoint(x, y, event), sx = _ref1[0], sy = _ref1[1];
         return _this.points.push([sx, sy]);
       };
     })(this), (function(_this) {
@@ -236,6 +244,9 @@ module.exports = FreeDrawingGesture = (function(_super) {
         var segments, _ref1;
         if ((_ref1 = _this.lastPath) != null) {
           _ref1.remove();
+        }
+        if (_this.points.length === 1) {
+          return;
         }
         segments = pointsToSegments(_simplify(_this.points));
         _this.currentLayer().path({
@@ -1283,6 +1294,41 @@ HistoryManager = require('./history-manager');
 
 int = parseInt;
 
+
+var getBrowser = function(){
+    var ua = window.navigator.userAgent.toLowerCase();
+    var ver = window.navigator.appVersion.toLowerCase();
+    var name = 'unknown';
+
+    if (ua.indexOf("msie") != -1){
+        if (ver.indexOf("msie 6.") != -1){
+            name = 'ie6';
+        }else if (ver.indexOf("msie 7.") != -1){
+            name = 'ie7';
+        }else if (ver.indexOf("msie 8.") != -1){
+            name = 'ie8';
+        }else if (ver.indexOf("msie 9.") != -1){
+            name = 'ie9';
+        }else if (ver.indexOf("msie 10.") != -1){
+            name = 'ie10';
+        }else{
+            name = 'ie';
+        }
+    }else if(ua.indexOf('trident/7') != -1){
+        name = 'ie11';
+    }else if (ua.indexOf('chrome') != -1){
+        name = 'chrome';
+    }else if (ua.indexOf('safari') != -1){
+        name = 'safari';
+    }else if (ua.indexOf('opera') != -1){
+        name = 'opera';
+    }else if (ua.indexOf('firefox') != -1){
+        name = 'firefox';
+    }
+    return name;
+};
+;
+
 module.exports = Whiteboard = (function() {
   var template;
 
@@ -1338,6 +1384,7 @@ module.exports = Whiteboard = (function() {
     this.getSVG = __bind(this.getSVG, this);
     this.update = __bind(this.update, this);
     var $svg, el, fillColor, offsetX, offsetY, paper, strokeColor, svg, _ref;
+    this.ua = getBrowser();
     window.whiteboard = this;
     this.strokeColor = strokeColor = 'black';
     this.fillColor = fillColor = 'transparent';
