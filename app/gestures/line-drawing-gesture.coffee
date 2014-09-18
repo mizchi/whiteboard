@@ -84,8 +84,8 @@ class LineDrawingGesture extends Gesture
         strokeWidth: 1
 
     , (x, y, event) =>
-      sx = event.offsetX
-      sy = event.offsetY
+      [sx, sy] = @getStartPoint(x, y, event)
+
       if p = getNearPoint([sx, sy], @nearPoints)
         [sx, sy, fromShape] = p
         segs = Snap.parsePathString(fromShape.attr('d'))

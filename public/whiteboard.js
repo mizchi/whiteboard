@@ -116,7 +116,7 @@ module.exports = CircleDrawingGesture = (function(_super) {
     })(this), (function(_this) {
       return function(x, y, event) {
         var _ref1;
-        return _ref1 = _this.getPoint(event), sx = _ref1[0], sy = _ref1[1], _ref1;
+        return _ref1 = _this.getStartPoint(x, y, event), sx = _ref1[0], sy = _ref1[1], _ref1;
       };
     })(this), (function(_this) {
       return function() {
@@ -476,14 +476,13 @@ module.exports = LineDrawingGesture = (function(_super) {
       };
     })(this), (function(_this) {
       return function(x, y, event) {
-        var last_x, last_y, p, segs, _ref2;
-        sx = event.offsetX;
-        sy = event.offsetY;
+        var last_x, last_y, p, segs, _ref2, _ref3;
+        _ref2 = _this.getStartPoint(x, y, event), sx = _ref2[0], sy = _ref2[1];
         if (p = getNearPoint([sx, sy], _this.nearPoints)) {
           sx = p[0], sy = p[1], fromShape = p[2];
           segs = Snap.parsePathString(fromShape.attr('d'));
           points = segementsToPoints(segs);
-          _ref2 = _.last(points), last_x = _ref2[0], last_y = _ref2[1];
+          _ref3 = _.last(points), last_x = _ref3[0], last_y = _ref3[1];
           if (last_x === sx && last_y === sy) {
             return mode = 'tail';
           } else {
@@ -551,7 +550,7 @@ module.exports = RectDrawingGesture = (function(_super) {
     })(this), (function(_this) {
       return function(x, y, event) {
         var _ref1;
-        _ref1 = _this.getPoint(event), sx = _ref1[0], sy = _ref1[1];
+        _ref1 = _this.getStartPoint(x, y, event), sx = _ref1[0], sy = _ref1[1];
         return _this.lastShape = null;
       };
     })(this), (function(_this) {

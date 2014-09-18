@@ -20,7 +20,7 @@ class CircleDrawingGesture extends Gesture
         fill: @wb.fillColor
       @lastShape = circle
     , (x, y, event) =>
-      [sx, sy] = @getPoint(event)
+      [sx, sy] = @getStartPoint(x, y, event)
     , =>
       @wb.update()
       @lastShape = null

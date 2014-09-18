@@ -27,7 +27,7 @@ class RectDrawingGesture extends Gesture
 
       @lastShape = rect
     , (x, y, event) =>
-      [sx, sy] = @getPoint(event)
+      [sx, sy] = @getStartPoint(x, y, event)
       @lastShape = null
     , =>
       @wb.update()
