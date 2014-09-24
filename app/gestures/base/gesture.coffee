@@ -35,6 +35,14 @@ class Gesture
   getStartPoint: (x, y, ev) ->
     if @wb.ua is 'firefox'
       [x - @wb.offsetX, y - @wb.offsetY]
+    else if @wb.ua.indexOf('ie') > -1
+      {left, top} = @wb.$svg.offset()
+      [x, y] = @getPoint(ev)
+      # rever offset for ie
+      [
+        x + left
+        y + top
+      ]
     else
       @getPoint(ev)
 

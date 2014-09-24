@@ -61,19 +61,26 @@ module.exports = Gesture = (function() {
   Gesture.prototype.dispose = function() {};
 
   Gesture.prototype.getStartPoint = function(x, y, ev) {
+    var left, top, _ref, _ref1;
     if (this.wb.ua === 'firefox') {
       return [x - this.wb.offsetX, y - this.wb.offsetY];
+    } else if (this.wb.ua.indexOf('ie') > -1) {
+      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
+      _ref1 = this.getPoint(ev), x = _ref1[0], y = _ref1[1];
+      return [x + left, y + top];
     } else {
       return this.getPoint(ev);
     }
   };
 
   Gesture.prototype.getPoint = function(ev) {
-    var left, top, _ref;
+    var left, top, _ref, _ref1;
     if (ev.offsetX) {
+      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
       return [ev.offsetX - this.wb.offsetX, ev.offsetY - this.wb.offsetY];
     } else {
-      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
+      console.log('page');
+      _ref1 = this.wb.$svg.offset(), left = _ref1.left, top = _ref1.top;
       return [ev.pageX - left, ev.pageY - top];
     }
   };
@@ -233,10 +240,12 @@ module.exports = FreeDrawingGesture = (function(_super) {
       };
     })(this), (function(_this) {
       return function(x, y, event) {
-        var _ref1;
+        var left, top, _ref1, _ref2;
         _this.points = [];
         _this.lastPath = null;
         _ref1 = _this.getStartPoint(x, y, event), sx = _ref1[0], sy = _ref1[1];
+        console.log(sx, ':', sy);
+        _ref2 = _this.wb.$svg.offset(), left = _ref2.left, top = _ref2.top;
         return _this.points.push([sx, sy]);
       };
     })(this), (function(_this) {
