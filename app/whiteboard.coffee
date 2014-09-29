@@ -184,6 +184,7 @@ module.exports = class Whiteboard
       l.node.style.visibility = 'hidden'
     @layer = @layers[n]
     @layer.node.style.visibility = 'visible'
+    @update()
 
   # Show grid
   # @param [Array<number>] xs x axis points

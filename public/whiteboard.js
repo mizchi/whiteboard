@@ -1514,7 +1514,8 @@ module.exports = Whiteboard = (function() {
       l.node.style.visibility = 'hidden';
     }
     this.layer = this.layers[n];
-    return this.layer.node.style.visibility = 'visible';
+    this.layer.node.style.visibility = 'visible';
+    return this.update();
   };
 
   Whiteboard.prototype.showGrid = function(xs, ys) {
