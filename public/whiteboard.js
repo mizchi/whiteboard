@@ -1380,14 +1380,17 @@ module.exports = Whiteboard = (function() {
 
   _.extend(Whiteboard.prototype, EventEmitter.prototype);
 
-  function Whiteboard(selector) {
+  function Whiteboard(selector, options) {
+    var $svg, el, fillColor, offsetX, offsetY, paper, strokeColor, svg, _ref, _ref1;
+    if (options == null) {
+      options = {};
+    }
     this.setBackgroundHTML = __bind(this.setBackgroundHTML, this);
     this.$ = __bind(this.$, this);
     this.setMode = __bind(this.setMode, this);
     this.setSVG = __bind(this.setSVG, this);
     this.getSVG = __bind(this.getSVG, this);
     this.update = __bind(this.update, this);
-    var $svg, el, fillColor, offsetX, offsetY, paper, strokeColor, svg, _ref;
     this.ua = getBrowser();
     window.whiteboard = this;
     this.strokeColor = strokeColor = 'black';
@@ -1395,11 +1398,11 @@ module.exports = Whiteboard = (function() {
     this.tolelance = 2;
     this.el = el = document.querySelector(selector);
     this.$el = $(this.el);
-    this.$el.html(template());
+    this.$el.html((_ref = options.template) != null ? _ref : template());
     this.svg = svg = document.querySelector('svg.whiteboard');
     this.$svg = $svg = $(this.svg);
     this.paper = paper = Snap(svg);
-    _ref = this.$svg.position(), offsetX = _ref.left, offsetY = _ref.top;
+    _ref1 = this.$svg.position(), offsetX = _ref1.left, offsetY = _ref1.top;
     this.offsetX = offsetX;
     this.offsetY = offsetY;
     this.setupButtons();

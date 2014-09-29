@@ -99,7 +99,7 @@ module.exports = class Whiteboard
   # Constructor
   # @param {string} initialized selector
   # @return [Whiteboard]
-  constructor: (selector) ->
+  constructor: (selector, options = {}) ->
     @ua = getBrowser()
 
     window.whiteboard = @
@@ -111,7 +111,7 @@ module.exports = class Whiteboard
     # setup element
     @el = el = document.querySelector selector
     @$el = $(@el)
-    @$el.html template()
+    @$el.html options.template ? template()
     @svg = svg = document.querySelector 'svg.whiteboard'
     @$svg = $svg = $(@svg)
     @paper = paper = Snap(svg)
