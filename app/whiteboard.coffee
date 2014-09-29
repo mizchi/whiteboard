@@ -13,6 +13,7 @@ EventEmitter      = require './utils/event-emitter'
 HistoryManager = require './history-manager'
 int = parseInt
 
+# get browser type
 `
 var getBrowser = function(){
     var ua = window.navigator.userAgent.toLowerCase();
@@ -286,6 +287,5 @@ module.exports = class Whiteboard
     @$svg.css
       width: Math.max w, 640
       height: Math.max h, 480
-
 
 window.Whiteboard = Whiteboard
