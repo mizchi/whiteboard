@@ -74,13 +74,11 @@ module.exports = Gesture = (function() {
   };
 
   Gesture.prototype.getPoint = function(ev) {
-    var left, top, _ref, _ref1;
+    var left, top, _ref;
     if (ev.offsetX) {
-      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
       return [ev.offsetX - this.wb.offsetX, ev.offsetY - this.wb.offsetY];
     } else {
-      console.log('page');
-      _ref1 = this.wb.$svg.offset(), left = _ref1.left, top = _ref1.top;
+      _ref = this.wb.$svg.offset(), left = _ref.left, top = _ref.top;
       return [ev.pageX - left, ev.pageY - top];
     }
   };
@@ -240,12 +238,10 @@ module.exports = FreeDrawingGesture = (function(_super) {
       };
     })(this), (function(_this) {
       return function(x, y, event) {
-        var left, top, _ref1, _ref2;
+        var _ref1;
         _this.points = [];
         _this.lastPath = null;
         _ref1 = _this.getStartPoint(x, y, event), sx = _ref1[0], sy = _ref1[1];
-        console.log(sx, ':', sy);
-        _ref2 = _this.wb.$svg.offset(), left = _ref2.left, top = _ref2.top;
         return _this.points.push([sx, sy]);
       };
     })(this), (function(_this) {
